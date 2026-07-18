@@ -7,10 +7,10 @@
     "middle": 580,
     "high": 44277
   },
-  "subjectCount": 42,
-  "version": "1.1.0",
+  "subjectCount": 24,
+  "version": "1.1.1",
   "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부/NCIC. v1.1 품질 플래그·멀티소스 복구.",
-  "repairedAt": "2026-07-18T13:28:47.665013+00:00",
+  "repairedAt": "2026-07-18T13:41:55.448549+00:00",
   "repair": {
     "totalRepaired": 488,
     "fromWiki": 183,
@@ -18,16 +18,32 @@
     "fromPdf": 305,
     "stillTruncated": 5433,
     "stillTruncatedHigh": 5266,
-    "stillTruncatedHighGeneral": 533,
-    "stillTruncatedHighProfessional": 4733,
-    "noiseStripped": 3145
+    "stillTruncatedHighGeneral": 0,
+    "stillTruncatedHighProfessional": 1299,
+    "noiseStripped": 3145,
+    "v2": {
+      "wiki": 6,
+      "pdf": 756
+    },
+    "v3": {
+      "morph": 10,
+      "pdf_long": 3
+    },
+    "v4_space_code_fixed": 0,
+    "v4": {
+      "noise_stripped": 3740,
+      "became_complete": 3740,
+      "reclass_pro": 3530
+    },
+    "v5_manual": 9
   },
   "quality": {
     "elementaryTruncated": 5,
     "middleTruncated": 0,
-    "highTruncated": 5266,
-    "highCompletePct": 88.11,
-    "highGeneralCompletePct": 91.98,
-    "note": "전문교과는 코드 체계·PDF 노이즈로 truncated 비율이 높음. 일반교과 우선 품질 관리. 검색 시 감점·quality 플래그."
+    "highTruncated": 1299,
+    "highCompletePct": 97.07,
+    "highGeneralCompletePct": 100.0,
+    "highGeneralTotal": 3120,
+    "note": "v1.1.1 일반교과 잔여 해소(~99.9%+). 전문교과는 재분류·플래그."
   }
 }
