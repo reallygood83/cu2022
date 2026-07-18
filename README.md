@@ -178,3 +178,12 @@ MIT (코드). 교육과정 텍스트는 공공 교육과정 인용 목적.
 
 - 기획: mycl `docs/SERVICE-PLAN-KOREA-CLAUDE-FOR-TEACHERS.md`
 - 원문 데이터: LearningMaster `001-PublicDocu/{초등,중등,고등}교육과정`
+
+## QA
+
+```bash
+npm run build
+npm run qa:smoke   # stdio로 툴 10종 스모크 (cite-only validate 포함)
+```
+
+결과는 `qa/mcp-qa-artifact.md`에 기록됩니다.

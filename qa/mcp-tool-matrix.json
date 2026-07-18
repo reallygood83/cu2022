@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-07-18T13:52:42.287Z",
+  "version": "1.1.1",
+  "score": 1,
+  "pass": true,
+  "passed": 13,
+  "total": 13,
+  "checks": [
+    {
+      "name": "tool_count_10",
+      "pass": true,
+      "detail": "curriculum_stats,curriculum_list_subjects,curriculum_search,curriculum_get,lesson_pack,lesson_pack_validate,curriculum_quality,assessment_scaffold,parent_notice_draft,unit_map"
+    },
+    {
+      "name": "stats_total",
+      "pass": true,
+      "detail": "45468"
+    },
+    {
+      "name": "search_hits",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "citationRule",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "get_found",
+      "pass": true,
+      "detail": "6수01-06"
+    },
+    {
+      "name": "pack_standards",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "pack_brief",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "validate_rejects_fake",
+      "pass": true,
+      "detail": "[\"6수01-99\"]"
+    },
+    {
+      "name": "validate_ok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "high_general_complete",
+      "pass": true,
+      "detail": "100"
+    },
+    {
+      "name": "assessment",
+      "pass": true,
+      "detail": "called"
+    },
+    {
+      "name": "parent_notice",
+      "pass": true,
+      "detail": "called"
+    },
+    {
+      "name": "unit_map",
+      "pass": true,
+      "detail": "called"
+    }
+  ],
+  "tools": [
+    "curriculum_stats",
+    "curriculum_list_subjects",
+    "curriculum_search",
+    "curriculum_get",
+    "lesson_pack",
+    "lesson_pack_validate",
+    "curriculum_quality",
+    "assessment_scaffold",
+    "parent_notice_draft",
+    "unit_map"
+  ]
+}
