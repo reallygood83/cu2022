@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "2022cu-kr0": {
+      "command": "npx",
+      "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
+    }
+  }
+}

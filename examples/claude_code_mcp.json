@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "2022cu-kr0": {
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/index.js"]
+    }
+  }
+}

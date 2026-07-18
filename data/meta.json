@@ -1,0 +1,13 @@
+{
+  "builtAt": "2026-07-18T13:06:38.595Z",
+  "sourceRoot": "/Users/moon/Documents/LearningMaster/001-PublicDocu",
+  "total": 45468,
+  "byLevel": {
+    "elementary": 611,
+    "middle": 580,
+    "high": 44277
+  },
+  "subjectCount": 42,
+  "version": "1.0.0",
+  "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부/NCIC."
+}
