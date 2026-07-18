@@ -82,9 +82,11 @@ claude mcp add 2022cu-kr0 -- node /절대경로/2022CU-kr0-mcp/dist/index.js
 |------|------|
 | `curriculum_stats` | 데이터셋 통계 |
 | `curriculum_list_subjects` | 학교급별 과목·건수 |
-| `curriculum_search` | 자연어/키워드/코드 검색 (**핵심**) |
+| `curriculum_search` | 자연어/키워드/코드 검색 (**핵심**, 품질 플래그 포함) |
 | `curriculum_get` | 코드 단건 조회 |
-| `lesson_pack` | 수업 패키지 골격 (성취기준 인용 포함) |
+| `curriculum_quality` | 잘림·복구·과목별 노이즈 리포트 |
+| `lesson_pack` | 수업 패키지 + **agentGenerationBrief** (호스트 모델 구체화 지시) |
+| `lesson_pack_validate` | 초안 속 성취기준 코드 **cite-only** 검증 |
 | `assessment_scaffold` | 형성·총괄 평가 골격 |
 | `parent_notice_draft` | 학부모 안내문 초안 |
 | `unit_map` | 영역 클러스터 단원 지도 (Marble light) |
@@ -94,18 +96,38 @@ claude mcp add 2022cu-kr0 -- node /절대경로/2022CU-kr0-mcp/dist/index.js
 - Resource: `curriculum://meta`
 - Prompt: `teacher_lesson_design`, `teacher_parent_notice`
 
+## 품질 한계를 어떻게 넘나? (v1.1)
+
+| 한계 | 보완 |
+|------|------|
+| PDF 추출 잘림 | 멀티소스 복구(wiki 완전문 · PDF multiline · 탐구/해설 노이즈 제거), `quality=truncated_suspect` 플래그 |
+| 전문교과 노이즈 | 검색 시 전문교과 기본 감점, 일반교과 우선, `curriculum_quality`로 투명 공개 |
+| Lesson Pack이 규칙+검색만 | **오개념/활동 뱅크**, 학습초점(지식·기능·태도·동사), 시수 배분, **`agentGenerationBrief`**로 호스트 LLM이 cite-only 구체화 |
+| 모델이 코드 창작 | **`lesson_pack_validate`** + search 결과의 `citationRule` |
+
+현재 인덱스 품질 대략치 (재빌드 시 `curriculum_quality`로 확인):
+
+- 초·중: 사실상 완전 문장
+- 고등 **일반교과** 완성도 ~**92%**
+- 고등 전체(전문 포함) ~**88%** — 잔여는 플래그·감점으로 처리
+
 ## 교사 사용 예시
 
 에이전트에게:
 
 ```text
-lesson_pack 도구로 "5학년 분수, 부진 포함 45분" 수업안을 만들고
-성취기준은 도구 결과만 인용해줘.
+lesson_pack 도구로 "5학년 분수, 부진 포함 45분" 수업안을 만들고,
+agentGenerationBrief를 따라 활동을 구체화해.
+성취기준은 citationTexts만 인용하고, 끝난 뒤 lesson_pack_validate로 검사해.
 ```
 
 ```text
 curriculum_search로 중2 일차함수 성취기준 찾고
 assessment_scaffold로 형성평가 3문항 골격 만들어줘.
+```
+
+```text
+curriculum_quality로 데이터 품질 상태를 보고해줘.
 ```
 
 ## mycl Next (SaaS 데모) 연동 방향

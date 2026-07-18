@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Dataset, SchoolLevel, Standard } from "./types.js";
+import { isTruncatedSuspect } from "./quality.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -97,10 +98,20 @@ export function searchStandards(opts: {
       score += 5;
     if (/분수/.test(q) && s.text.includes("분수")) score += 12;
 
+    // PDF 잘림·전문교과 노이즈: 완전 문장 우선
+    if (isTruncatedSuspect(s)) score -= 15;
+    if (s.subject === "전문교과" && !/전문|특성화|마이스터/.test(q)) score -= 8;
+    if (s.repair) score += 2;
+
     if (score > 0) scored.push({ ...s, score });
   }
 
-  scored.sort((a, b) => b.score - a.score || a.code.localeCompare(b.code, "ko"));
+  scored.sort(
+    (a, b) =>
+      b.score - a.score ||
+      Number(isTruncatedSuspect(a)) - Number(isTruncatedSuspect(b)) ||
+      a.code.localeCompare(b.code, "ko"),
+  );
   return scored.slice(0, limit);
 }
 
@@ -145,4 +156,66 @@ export function listSubjects(schoolLevel?: SchoolLevel): Array<{
 
 export function stats() {
   return loadDataset().meta;
+}
+
+/** 데이터 품질 요약 + 샘플 (한계 투명 공개) */
+export function qualityReport(limitSamples = 10) {
+  const ds = loadDataset();
+  const byLevel = { elementary: 0, middle: 0, high: 0 };
+  const truncByLevel = { elementary: 0, middle: 0, high: 0 };
+  const truncBySubject = new Map<string, number>();
+  const samples: Array<{
+    code: string;
+    schoolLevel: string;
+    subject: string;
+    text: string;
+  }> = [];
+
+  for (const s of ds.standards) {
+    byLevel[s.schoolLevel] += 1;
+    if (isTruncatedSuspect(s)) {
+      truncByLevel[s.schoolLevel] += 1;
+      truncBySubject.set(
+        s.subject,
+        (truncBySubject.get(s.subject) ?? 0) + 1,
+      );
+      if (
+        samples.length < limitSamples &&
+        s.schoolLevel === "high" &&
+        s.subject !== "전문교과"
+      ) {
+        samples.push({
+          code: s.code,
+          schoolLevel: s.schoolLevel,
+          subject: s.subject,
+          text: s.text,
+        });
+      }
+    }
+  }
+
+  const high = byLevel.high || 1;
+  return {
+    meta: ds.meta.quality ?? null,
+    repair: ds.meta.repair ?? null,
+    version: ds.meta.version,
+    counts: {
+      byLevel,
+      truncatedByLevel: truncByLevel,
+      highCompletePct: Number(
+        (((high - truncByLevel.high) / high) * 100).toFixed(2),
+      ),
+      truncatedBySubjectTop: [...truncBySubject.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 12)
+        .map(([subject, count]) => ({ subject, count })),
+    },
+    samplesTruncatedGeneral: samples,
+    mitigation: [
+      "검색 시 truncated_suspect 감점, 전문교과 기본 감점",
+      "lesson_pack은 완전 문장 우선 선정 + qualityWarning",
+      "lesson_pack_validate로 창작 코드 차단",
+      "멀티소스 복구(wiki/official_md/pdf) 결과는 repair 필드로 표시",
+    ],
+  };
 }

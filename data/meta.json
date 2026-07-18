@@ -8,6 +8,26 @@
     "high": 44277
   },
   "subjectCount": 42,
-  "version": "1.0.0",
-  "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부/NCIC."
+  "version": "1.1.0",
+  "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부/NCIC. v1.1 품질 플래그·멀티소스 복구.",
+  "repairedAt": "2026-07-18T13:28:47.665013+00:00",
+  "repair": {
+    "totalRepaired": 488,
+    "fromWiki": 183,
+    "fromOfficialMd": 0,
+    "fromPdf": 305,
+    "stillTruncated": 5433,
+    "stillTruncatedHigh": 5266,
+    "stillTruncatedHighGeneral": 533,
+    "stillTruncatedHighProfessional": 4733,
+    "noiseStripped": 3145
+  },
+  "quality": {
+    "elementaryTruncated": 5,
+    "middleTruncated": 0,
+    "highTruncated": 5266,
+    "highCompletePct": 88.11,
+    "highGeneralCompletePct": 91.98,
+    "note": "전문교과는 코드 체계·PDF 노이즈로 truncated 비율이 높음. 일반교과 우선 품질 관리. 검색 시 감점·quality 플래그."
+  }
 }

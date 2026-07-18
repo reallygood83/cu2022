@@ -1,6 +1,6 @@
 {
   "name": "2022cu-kr0-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "2022 개정 교육과정 성취기준 MCP — 초·중·고 검색·Lesson Pack·교사 워크플로 (Claude for Teachers 한국형)",
   "type": "module",
   "bin": {
@@ -17,6 +17,7 @@
   "scripts": {
     "build": "tsc && node scripts/chmod-bin.mjs",
     "build:data": "node scripts/build-index.mjs",
+    "repair:data": "node scripts/repair-index.mjs",
     "prepare": "npm run build",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",

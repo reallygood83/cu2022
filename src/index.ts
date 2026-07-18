@@ -11,15 +11,17 @@ import {
   getByCode,
   listSubjects,
   loadDataset,
+  qualityReport,
   schoolLevelLabel,
   searchStandards,
   stats,
 } from "./data.js";
-import { buildLessonPack } from "./lesson.js";
+import { buildLessonPack, validateLessonDraft } from "./lesson.js";
+import { isTruncatedSuspect } from "./quality.js";
 
 const server = new McpServer({
   name: "2022cu-kr0-mcp",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 const schoolLevelSchema = z
@@ -97,9 +99,14 @@ server.tool(
         gradeBand: r.gradeBand,
         score: r.score,
         sourceFile: r.sourceFile,
+        quality: isTruncatedSuspect(r) ? "truncated_suspect" : r.repair ? "repaired" : "ok",
+        qualityWarning: isTruncatedSuspect(r)
+          ? "본문 잘림 가능 — 원문 대조 권장"
+          : undefined,
+        repair: r.repair,
       })),
       citationRule:
-        "이후 생성물에는 위 results의 code와 text만 성취기준으로 인용하세요. 없는 코드를 만들지 마세요.",
+        "이후 생성물에는 위 results의 code와 text만 성취기준으로 인용하세요. 없는 코드를 만들지 마세요. truncated_suspect는 단정 인용하지 마세요.",
     });
   },
 );
@@ -131,7 +138,7 @@ server.tool(
 
 server.tool(
   "lesson_pack",
-  "Claude for Teachers 스타일 Lesson Pack 초안을 만듭니다. 성취기준 검색→인용→오개념→활동(분)→형성평가→(선택)가정안내 구조. 교사가 검토·수정해야 합니다.",
+  "Claude for Teachers 스타일 Lesson Pack. 성취기준 검색→인용→학습초점→오개념 뱅크→활동→형성평가→agentGenerationBrief(호스트 모델 구체화 지시). cite-only. 교사 검토 필수.",
   {
     query: z
       .string()
@@ -154,6 +161,43 @@ server.tool(
     });
     return jsonResult(pack);
   },
+);
+
+server.tool(
+  "lesson_pack_validate",
+  "수업 초안 텍스트에 등장하는 성취기준 코드가 인덱스(또는 허용 목록)에 있는지 검사합니다. 창작 코드 차단용 cite-only 가드.",
+  {
+    draft: z.string().describe("검증할 수업안·안내문 전체 텍스트"),
+    allowedCodes: z
+      .array(z.string())
+      .optional()
+      .describe("허용 코드 목록(없으면 query로 검색한 후보 사용)"),
+    query: z
+      .string()
+      .optional()
+      .describe("allowedCodes 없을 때 검색 쿼리"),
+    schoolLevel: schoolLevelSchema,
+    subject: z.string().optional(),
+  },
+  async (args) =>
+    jsonResult(
+      validateLessonDraft({
+        draft: args.draft,
+        allowedCodes: args.allowedCodes,
+        query: args.query,
+        schoolLevel: args.schoolLevel,
+        subject: args.subject,
+      }),
+    ),
+);
+
+server.tool(
+  "curriculum_quality",
+  "성취기준 인덱스 품질 리포트(잘림·복구·과목별 노이즈). PDF 추출 한계를 투명하게 보고하고 완화 정책을 안내합니다.",
+  {
+    sampleLimit: z.number().int().min(1).max(30).optional(),
+  },
+  async ({ sampleLimit }) => jsonResult(qualityReport(sampleLimit ?? 10)),
 );
 
 server.tool(
