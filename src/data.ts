@@ -47,6 +47,32 @@ export function matchLevel(
   return s.schoolLevel === level;
 }
 
+/** 질의에서 교과 힌트 추론 (UI가 수학으로 고정하면 짬뽕 발생 → 호출측에서도 추론 사용) */
+export function inferSubjectFromQuery(query: string): string | undefined {
+  const q = query.trim();
+  if (!q) return undefined;
+  // 더 구체적인 패턴을 먼저
+  const rules: Array<{ test: RegExp; subject: string }> = [
+    { test: /체육|스포츠|운동\s*기능|건강\s*체력|야구|축구|농구|배구|피구|발야구|티볼|네트형|영역형|경쟁\s*게임|게임\s*활동/, subject: "체육" },
+    { test: /수학|분수|소수|연산|도형|확률|통계|방정식|함수|측정/, subject: "수학" },
+    { test: /국어|독해|작문|문학|매체\s*언어|읽기|쓰기|말하기|듣기/, subject: "국어" },
+    { test: /영어|English|어휘|listening|reading/i, subject: "영어" },
+    { test: /과학|실험|광합성|물질|에너지|지구|생명|혼합물/, subject: "과학" },
+    { test: /사회|역사|지리|시민|경제|정치|일반사회/, subject: "사회" },
+    { test: /음악|가창|기악|창작\s*국악/, subject: "음악" },
+    { test: /미술|그리기|조소|디자인\s*표현/, subject: "미술" },
+    { test: /실과|기술|가정|정보/, subject: "실과" },
+    { test: /도덕|인성|배려|정의/, subject: "도덕" },
+  ];
+  for (const r of rules) {
+    if (r.test.test(q)) return r.subject;
+  }
+  // "OO교과" 패턴
+  const m = q.match(/([가-힣]{2,8})\s*교과/);
+  if (m) return m[1].replace(/(과|교육)$/, "") || m[1];
+  return undefined;
+}
+
 /** Simple Korean-friendly scoring */
 export function searchStandards(opts: {
   query: string;
@@ -59,11 +85,14 @@ export function searchStandards(opts: {
   const limit = Math.min(opts.limit ?? 10, 50);
   if (!q) return [];
 
+  const subject =
+    opts.subject?.trim() || inferSubjectFromQuery(q) || undefined;
+
   // exact code
   const exact = ds.standards.filter(
     (s) =>
       matchLevel(s, opts.schoolLevel) &&
-      (!opts.subject || s.subject.includes(opts.subject)) &&
+      (!subject || s.subject.includes(subject)) &&
       (s.code === q || s.code.replace(/\s+/g, "") === q.replace(/\s+/g, "")),
   );
   if (exact.length) {
@@ -75,7 +104,7 @@ export function searchStandards(opts: {
 
   for (const s of ds.standards) {
     if (!matchLevel(s, opts.schoolLevel)) continue;
-    if (opts.subject && !s.subject.includes(opts.subject)) continue;
+    if (subject && !s.subject.includes(subject)) continue;
 
     let score = 0;
     const hay = `${s.code} ${s.text} ${s.subject} ${s.domain ?? ""} ${s.gradeBand ?? ""}`;
@@ -84,24 +113,45 @@ export function searchStandards(opts: {
     if (s.code.includes(q) || q.includes(s.code)) score += 40;
     for (const t of tokens) {
       if (!t) continue;
-      if (s.text.includes(t)) score += 8;
-      if (s.subject.includes(t)) score += 6;
+      // 검색 노이즈 토큰 (문서 유형 단어)은 약한 가중치
+      const weak = /^(지도안|수업안|과정안|작성|위한|짜리|관련|대해|대한|있는|하는|하기)$/.test(t);
+      if (s.text.includes(t)) score += weak ? 2 : 8;
+      if (s.subject.includes(t) || t.includes(s.subject)) score += 10;
       if (s.domain?.includes(t)) score += 4;
       if (s.code.includes(t)) score += 10;
-      if (hayNorm.includes(t.toLowerCase())) score += 2;
+      if (hayNorm.includes(t.toLowerCase())) score += weak ? 0 : 2;
     }
+    // 교과 명시 시 해당 교과 가산
+    if (subject && s.subject.includes(subject)) score += 14;
     // grade hints
     if (/초|elem/i.test(q) && s.schoolLevel === "elementary") score += 3;
     if (/중|middle/i.test(q) && s.schoolLevel === "middle") score += 3;
     if (/고|high/i.test(q) && s.schoolLevel === "high") score += 3;
+    if (/6학년|초6/.test(q) && (s.gradeBand?.includes("6") || s.code.startsWith("6")))
+      score += 6;
     if (/5학년|초5/.test(q) && (s.gradeBand?.includes("5") || s.code.startsWith("6")))
       score += 5;
+    if (/4학년|초4/.test(q) && (s.gradeBand?.includes("4") || s.code.startsWith("4")))
+      score += 5;
+    // 주제 특화 가산
     if (/분수/.test(q) && s.text.includes("분수")) score += 12;
+    if (/소수/.test(q) && s.text.includes("소수")) score += 12;
+    if (/나눗셈/.test(q) && s.text.includes("나눗셈")) score += 12;
+    if (
+      /야구|발야구|티볼|축구|농구|배구|피구|스포츠|게임/.test(q) &&
+      /스포츠|게임|경쟁|기술형|전략형|영역형|네트형/.test(s.text + (s.domain ?? ""))
+    ) {
+      score += 18;
+    }
+    if (/체육/.test(q) && s.subject.includes("체육")) score += 10;
 
     // PDF 잘림·전문교과 노이즈: 완전 문장 우선
     if (isTruncatedSuspect(s)) score -= 15;
     if (s.subject === "전문교과" && !/전문|특성화|마이스터/.test(q)) score -= 8;
     if (s.repair) score += 2;
+
+    // 교과 불일치 페널티 (추론/명시 교과가 있는데 다른 교과 히트)
+    if (subject && !s.subject.includes(subject)) score -= 30;
 
     if (score > 0) scored.push({ ...s, score });
   }
@@ -117,12 +167,27 @@ export function searchStandards(opts: {
 
 function tokenize(q: string): string[] {
   const parts = q
-    .split(/[\s,./|]+/)
+    .split(/[\s,./|·]+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 1);
-  // also extract hangul words of length 2+
+  // hangul words 2+
   const hangul = q.match(/[가-힣]{2,}/g) ?? [];
-  return [...new Set([...parts, ...hangul])];
+  // 복합어 분해: 체육교과 → 체육, 교과 / 야구형 → 야구
+  const expanded: string[] = [];
+  for (const h of hangul) {
+    expanded.push(h);
+    if (h.endsWith("교과") && h.length > 2) expanded.push(h.slice(0, -2));
+    if (h.endsWith("형") && h.length > 2) expanded.push(h.slice(0, -1));
+    if (h.endsWith("짜리") && h.length > 2) expanded.push(h.slice(0, -2));
+  }
+  // 주요 교과·주제 키워드가 부분 문자열로 있으면 토큰 추가
+  for (const key of [
+    "체육", "수학", "국어", "영어", "과학", "사회", "음악", "미술", "실과", "도덕",
+    "야구", "축구", "농구", "배구", "피구", "스포츠", "게임", "분수", "소수", "나눗셈",
+  ]) {
+    if (q.includes(key)) expanded.push(key);
+  }
+  return [...new Set([...parts, ...hangul, ...expanded])];
 }
 
 export function getByCode(code: string): Standard | undefined {

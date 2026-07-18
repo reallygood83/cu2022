@@ -132,7 +132,8 @@ async function main() {
   const isNotice = kind === "notice" || kind === "parent-notice";
   const schoolLevel = args.level || "elementary";
   const durationMin = Number.isFinite(args.min) && args.min > 0 ? args.min : 40;
-  const subject = args.subject || (isNotice ? undefined : "수학");
+  // 교과 미지정 시 추론은 buildLessonPack/searchStandards에 맡김 (수학 하드코딩 금지)
+  const subject = args.subject || undefined;
   const outDir = resolve(args.out || join(homedir(), "Downloads"));
   mkdirSync(outDir, { recursive: true });
 

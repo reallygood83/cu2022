@@ -20,7 +20,7 @@ function standardsTable(standards) {
 }
 
 function metaHtmlTable(pack, opts = {}) {
-  const subject = cellOr(pack.standards?.[0]?.subject, opts.subject, "수학");
+  const subject = cellOr(pack.standards?.[0]?.subject, opts.subject, "교과");
   const grade =
     opts.grade ||
     (pack.parsed?.schoolLevel === "elementary"

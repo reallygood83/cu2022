@@ -1,5 +1,10 @@
 import type { Standard } from "./types.js";
-import { getByCode, searchStandards, schoolLevelLabel } from "./data.js";
+import {
+  getByCode,
+  searchStandards,
+  schoolLevelLabel,
+  inferSubjectFromQuery,
+} from "./data.js";
 import { isTruncatedSuspect, validateCitations } from "./quality.js";
 
 export interface LessonPack {
@@ -139,10 +144,12 @@ const MISCONCEPTION_BANK: Array<{ test: RegExp; items: string[] }> = [
     ],
   },
   {
-    test: /운동|체육|건강/,
+    test: /운동|체육|건강|야구|스포츠|게임|티볼|발야구/,
     items: [
-      "기능 시범만 보고 원리(힘·균형·호흡)를 놓침",
-      "안전 수칙을 ‘형식’으로만 인식",
+      "기능 시범만 보고 원리(힘·균형·타이밍·공간 인식)를 놓침",
+      "안전 수칙을 ‘형식’으로만 인식하고 실제 플레이에 적용하지 못함",
+      "규칙·역할을 이해하지 못한 채 승패에만 집중",
+      "공격·수비 전환 시 자기 위치를 이탈",
     ],
   },
   {
@@ -169,9 +176,11 @@ type ActCtx = {
   duration: number;
   struggling: boolean;
   advanced: boolean;
+  subject?: string;
+  pe?: boolean;
 };
 
-const ACTIVITY_SEEDS: ActivitySeed[] = [
+const ACTIVITY_SEEDS_GENERIC: ActivitySeed[] = [
   {
     phase: "도입",
     title: "배움 연결 · 성취기준 언어 공유",
@@ -207,6 +216,55 @@ const ACTIVITY_SEEDS: ActivitySeed[] = [
       "오늘 배운 것을 한 문장으로 쓰고 평가 문항에 답합니다.",
   },
 ];
+
+/** 체육·게임형 차시용 시드 (수학 ‘오류 분석’ 템플릿 오염 방지) */
+const ACTIVITY_SEEDS_PE: ActivitySeed[] = [
+  {
+    phase: "도입",
+    title: "준비 운동 · 학습 목표·안전 확인",
+    teacher: (c) =>
+      `준비 운동 후 오늘 게임(「${c.topic}」)의 목표를 성취기준(${c.codes[0] ?? "체육 기준"})과 연결해 안내하고, 안전 수칙·금지 행동을 확인합니다.`,
+    student: () =>
+      "준비 운동에 참여하고, 오늘 지킬 규칙·안전 수칙을 한 가지씩 말합니다.",
+    materials: ["호루라기", "콘", "안전 수칙 카드"],
+  },
+  {
+    phase: "전개",
+    title: "기본 기능·규칙 익히기",
+    teacher: (c) =>
+      `야구형(또는 해당 스포츠) 기본 기능(던지기·받기·치기·베이스 러닝 등)을 시범·분해 지도하고, 소집단 연습 과제를 제시합니다. (${c.codes.slice(0, 2).join(", ") || "성취기준"})`,
+    student: () =>
+      "짝·모둠 연습으로 기본 기능을 반복하고, 규칙에 맞게 역할을 교대합니다.",
+    materials: ["소프트 볼/티볼 용구", "베이스 마커", "연습 구역"],
+  },
+  {
+    phase: "전개",
+    title: "게임 적용 · 전략·페어플레이",
+    teacher: (c) =>
+      `미니 게임을 운영하며 공격·수비 전환, 협력·페어플레이 발문을 던집니다. 위험한 플레이는 즉시 중단·피드백합니다.`,
+    student: () =>
+      "게임에 참여해 자기 역할을 수행하고, 동료와 간단한 전략을 이야기합니다.",
+    materials: ["경기 코트/필드", "점수판", "역할 조끼"],
+  },
+  {
+    phase: "정리",
+    title: "정리 운동 · 성찰·차시 예고",
+    teacher: () =>
+      "정리 운동 후 오늘 기능·규칙·태도를 짧게 되묻고, 잘한 점·개선점을 공유하게 합니다.",
+    student: () =>
+      "정리 운동에 참여하고, 오늘 배운 기능·규칙·태도를 한 문장으로 나눕니다.",
+    materials: ["성찰 질문 카드"],
+  },
+];
+
+function pickActivitySeeds(ctx: { subject?: string; query: string }): ActivitySeed[] {
+  const pe =
+    ctx.subject === "체육" ||
+    /체육|스포츠|야구|티볼|발야구|축구|농구|배구|피구|게임\s*활동|경쟁\s*게임/.test(
+      ctx.query,
+    );
+  return pe ? ACTIVITY_SEEDS_PE : ACTIVITY_SEEDS_GENERIC;
+}
 
 function extractVerbs(text: string): string[] {
   const verbs = [
@@ -321,10 +379,14 @@ export function buildLessonPack(opts: {
     differentiation.push("부진");
   if (/심화|빠른|영재|도전/.test(opts.query)) differentiation.push("심화");
 
+  // 명시 subject 우선, 없으면 질의에서 추론 (하드코딩 '수학' 오염 방지)
+  const subject =
+    opts.subject?.trim() || inferSubjectFromQuery(opts.query) || undefined;
+
   const hits = searchStandards({
     query: opts.query,
     schoolLevel: opts.schoolLevel ?? "all",
-    subject: opts.subject,
+    subject,
     limit: 8,
   });
 
@@ -335,12 +397,20 @@ export function buildLessonPack(opts: {
     if (ta !== tb) return ta - tb;
     return b.score - a.score;
   });
-  const selected = ranked.slice(0, 3);
+  // 교과가 정해졌으면 다른 교과 결과 제거 (이중 안전)
+  const filtered = subject
+    ? ranked.filter((s) => s.subject.includes(subject))
+    : ranked;
+  const selected = (filtered.length ? filtered : ranked).slice(0, 3);
   const primary = selected[0];
   const codes = selected.map((s) => s.code);
   const topic = opts.query.replace(/,.*$/, "").trim();
   const struggling = differentiation.includes("부진");
   const advanced = differentiation.includes("심화");
+  // 체육 시드는 '선택된 성취기준/교과'가 체육일 때만 (쿼리에 야구가 있어도 subject=수학이면 수학 시드)
+  const pe =
+    (primary?.subject?.includes("체육") ?? false) ||
+    subject === "체육";
 
   const mins = allocateMinutes(duration, 4);
   const ctx: ActCtx = {
@@ -350,14 +420,11 @@ export function buildLessonPack(opts: {
     duration,
     struggling,
     advanced,
+    subject: primary?.subject || subject,
+    pe,
   };
 
-  const seeds = [
-    ACTIVITY_SEEDS[0],
-    ACTIVITY_SEEDS[1],
-    ACTIVITY_SEEDS[2],
-    ACTIVITY_SEEDS[3],
-  ];
+  const seeds = pickActivitySeeds({ subject: ctx.subject, query: opts.query });
   const activities: LessonPack["activities"] = seeds.map((seed, i) => ({
     min: mins[i] ?? 5,
     phase: seed.phase,
@@ -366,11 +433,15 @@ export function buildLessonPack(opts: {
     student: seed.student(ctx),
     linkedStandardCodes: codes.slice(0, 2),
     scaffoldForStruggling: struggling
-      ? "단계 예시·힌트 카드·짝 활동·필수 문항 우선. 성공 경험을 먼저 확보합니다."
+      ? pe
+        ? "기능을 더 작은 단계로 분해하고, 성공 구간을 넓힌 뒤 게임에 합류시킵니다."
+        : "단계 예시·힌트 카드·짝 활동·필수 문항 우선. 성공 경험을 먼저 확보합니다."
       : undefined,
     extensionForAdvanced: advanced
-      ? "경계 사례·설명 과제·동료 튜터링·전이 문제를 추가합니다."
-      : i === 1
+      ? pe
+        ? "작전 보드·역할 리더·규칙 변형 미니 게임을 맡깁니다."
+        : "경계 사례·설명 과제·동료 튜터링·전이 문제를 추가합니다."
+      : i === 1 && !pe
         ? "여유 있는 학생: 다른 표현·반례 찾기 확장 과제"
         : undefined,
     materials: seed.materials,
@@ -382,30 +453,54 @@ export function buildLessonPack(opts: {
   );
   const learningFocus = buildLearningFocus(selected, topic);
 
-  const formativeItems: LessonPack["formativeItems"] = [
-    {
-      type: "진단",
-      prompt: primary
-        ? `${primary.text.replace(/다\.\s*$/, "")}와 관련된 예시 한 가지를 말해 보세요.`
-        : `${topic}에 대해 아는 것을 적어 보세요.`,
-      lookFor: "핵심 개념 사용, 오개념 여부",
-      linkedStandardCodes: codes.slice(0, 1),
-    },
-    {
-      type: "형성",
-      prompt: struggling
-        ? "기본 예시 1개를 해결해 보세요. (힌트 사용 가능)"
-        : "오늘 배운 개념을 적용한 문제 2개를 해결·설명해 보세요.",
-      lookFor: "절차 정확성, 설명 가능성",
-      linkedStandardCodes: codes.slice(0, 2),
-    },
-    {
-      type: "성찰",
-      prompt: "오늘 가장 헷갈렸던 점과 다음에 연습할 점을 한 줄로 쓰세요.",
-      lookFor: "메타인지·다음 학습 연결",
-      linkedStandardCodes: codes.slice(0, 1),
-    },
-  ];
+  const formativeItems: LessonPack["formativeItems"] = pe
+    ? [
+        {
+          type: "진단",
+          prompt:
+            "오늘 게임에서 지켜야 할 안전 수칙과 기본 규칙 한 가지를 말해 보세요.",
+          lookFor: "규칙·안전 인식",
+          linkedStandardCodes: codes.slice(0, 1),
+        },
+        {
+          type: "형성",
+          prompt: struggling
+            ? "기본 기능(던지기·받기 등) 한 가지를 규칙에 맞게 수행해 보세요."
+            : "게임 상황에서 자기 역할(공격/수비)을 수행하고, 사용한 전략을 한 문장으로 설명해 보세요.",
+          lookFor: "기능 수행, 규칙 준수, 협력",
+          linkedStandardCodes: codes.slice(0, 2),
+        },
+        {
+          type: "성찰",
+          prompt: "오늘 가장 잘한 플레이와 다음에 연습할 기능을 한 줄로 쓰세요.",
+          lookFor: "자기 인식·다음 연습 연결",
+          linkedStandardCodes: codes.slice(0, 1),
+        },
+      ]
+    : [
+        {
+          type: "진단",
+          prompt: primary
+            ? `${primary.text.replace(/다\.\s*$/, "")}와 관련된 예시 한 가지를 말해 보세요.`
+            : `${topic}에 대해 아는 것을 적어 보세요.`,
+          lookFor: "핵심 개념 사용, 오개념 여부",
+          linkedStandardCodes: codes.slice(0, 1),
+        },
+        {
+          type: "형성",
+          prompt: struggling
+            ? "기본 예시 1개를 해결해 보세요. (힌트 사용 가능)"
+            : "오늘 배운 개념을 적용한 문제 2개를 해결·설명해 보세요.",
+          lookFor: "절차 정확성, 설명 가능성",
+          linkedStandardCodes: codes.slice(0, 2),
+        },
+        {
+          type: "성찰",
+          prompt: "오늘 가장 헷갈렸던 점과 다음에 연습할 점을 한 줄로 쓰세요.",
+          lookFor: "메타인지·다음 학습 연결",
+          linkedStandardCodes: codes.slice(0, 1),
+        },
+      ];
 
   const truncCount = selected.filter((s) => isTruncatedSuspect(s)).length;
   const lowScore =
