@@ -8,17 +8,18 @@
 [![MCP](https://img.shields.io/badge/MCP-stdio-blue)](https://modelcontextprotocol.io)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.1-informational)](package.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-informational)](package.json)
 
 | | |
 |--|--|
 | **공식 명칭** | **`cu2022-mcp`** |
 | **한글 표기** | **성취기준 커넥터** |
 | **의미** | 2022 개정 성취기준을 cite-only로 에이전트에 연결 |
-| **CLI** | `cu2022-mcp` |
+| **CLI** | `cu2022-mcp` (MCP) · **`cu2022-doc`** (터미널 → HWPX) |
 | **GitHub 리포** | `2022CU-kr0-mcp` (URL 호환 유지) |
 
-📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)
+📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
+📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
 
 ---
 
@@ -109,6 +110,34 @@ claude mcp add cu2022-mcp -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
 
 **Resource:** `curriculum://meta`  
 **Prompts:** `teacher_lesson_design`, `teacher_parent_notice`
+
+---
+
+## 터미널에서 지도안·가정통신문 → 한컴 파일
+
+MCP 없이 **로컬 한 줄**로 과정안/가정통신문을 만들고 **`.hwpx`로 저장**할 수 있습니다.
+
+```bash
+npm install
+npm install kordoc    # HWPX 생성 (optionalDependencies)
+npm run build
+
+# 지도안 → ~/Downloads/*.hwpx (+ .md)
+npx cu2022-doc lesson "분수 나눗셈 개념, 부진 학생 기초 강화 40분" \
+  --level elementary --min 40 --open
+
+# 가정통신문
+npx cu2022-doc notice "현장체험학습 준비물 안내" --school 한빛초 -o ~/Downloads
+```
+
+| 형식 | 지원 | 비고 |
+|------|------|------|
+| **`.hwpx`** | ✅ | kordoc `markdownToHwpx` — **권장** (한컴 네이티브) |
+| **`.md`** | ✅ | 중간 산출·검수용 |
+| **`.hwp` 바이너리 신규 생성** | ⚠️ | kordoc/rhwp 오픈 경로 **미지원** (파싱·패치만). 한컴에서 HWPX → HWP 재저장 |
+| 뷰어 | 선택 | `mohwp studio` / rhwp / 한컴 |
+
+상세·한계·rhwp 역할: [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
 
 ---
 

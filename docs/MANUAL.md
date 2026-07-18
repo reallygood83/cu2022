@@ -282,3 +282,20 @@ A. 패키지·설정·CLI는 **`cu2022-mcp`**, 한글 표기는 **성취기준 �
 - 이슈: 리포 Issues  
 - 버전: `package.json` / `curriculum_stats`  
 - 스모크: `npm run qa:smoke`
+
+---
+
+## 12. 터미널에서 지도안·가정통신문 파일 저장 (cu2022-doc)
+
+MCP 클라이언트 없이 터미널만으로 과정안/가정통신문을 **한컴 호환 HWPX**로 저장합니다.
+
+```bash
+npm install kordoc
+npm run build
+npx cu2022-doc lesson "분수 나눗셈 기초 40분" --level elementary --min 40 -o ~/Downloads --open
+npx cu2022-doc notice "현장체험학습 준비물 안내" --school ○○초 -o ~/Downloads
+```
+
+- 출력: `.md` + **`.hwpx`** (권장). 레거시 `.hwp` 바이너리 **신규 생성은 미지원** → 한컴에서 재저장.
+- kordoc = 생성/파싱, rhwp/master-of-hwp = 뷰어·편집(선택).
+- 상세: [WORKFLOW-TERMINAL-DOC.md](./WORKFLOW-TERMINAL-DOC.md)
