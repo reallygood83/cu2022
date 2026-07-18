@@ -105,11 +105,11 @@ claude mcp add 2022cu-kr0 -- node /절대경로/2022CU-kr0-mcp/dist/index.js
 | Lesson Pack이 규칙+검색만 | **오개념/활동 뱅크**, 학습초점(지식·기능·태도·동사), 시수 배분, **`agentGenerationBrief`**로 호스트 LLM이 cite-only 구체화 |
 | 모델이 코드 창작 | **`lesson_pack_validate`** + search 결과의 `citationRule` |
 
-현재 인덱스 품질 대략치 (재빌드 시 `curriculum_quality`로 확인):
+현재 인덱스 품질 대략치 (v1.1.1, `curriculum_quality`로 확인):
 
 - 초·중: 사실상 완전 문장
-- 고등 **일반교과** 완성도 ~**92%**
-- 고등 전체(전문 포함) ~**88%** — 잔여는 플래그·감점으로 처리
+- 고등 **일반교과** 완성도 ~**100%** (오분류 전문코드 재분류 + 잔여 복구)
+- 전문교과: 검색 감점·`truncated_suspect` 플래그로 격리 (노이즈 잔존 가능)
 
 ## 교사 사용 예시
 
