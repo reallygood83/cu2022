@@ -257,12 +257,7 @@ const ACTIVITY_SEEDS_PE: ActivitySeed[] = [
   },
 ];
 
-function pickActivitySeeds(ctx: { subject?: string; query: string }): ActivitySeed[] {
-  const pe =
-    ctx.subject === "체육" ||
-    /체육|스포츠|야구|티볼|발야구|축구|농구|배구|피구|게임\s*활동|경쟁\s*게임/.test(
-      ctx.query,
-    );
+function pickActivitySeeds(pe: boolean): ActivitySeed[] {
   return pe ? ACTIVITY_SEEDS_PE : ACTIVITY_SEEDS_GENERIC;
 }
 
@@ -424,7 +419,7 @@ export function buildLessonPack(opts: {
     pe,
   };
 
-  const seeds = pickActivitySeeds({ subject: ctx.subject, query: opts.query });
+  const seeds = pickActivitySeeds(pe);
   const activities: LessonPack["activities"] = seeds.map((seed, i) => ({
     min: mins[i] ?? 5,
     phase: seed.phase,
