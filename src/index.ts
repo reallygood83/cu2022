@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * 2022CU-kr0-mcp
- * 2022 개정 교육과정 성취기준 MCP Server
- * Claude / Codex / Gemini / Cursor / Hermes 등 범용 stdio MCP
+ * cu2022-mcp · 성취기준 커넥터
+ * 2022 개정 교육과정 성취기준 MCP Server (stdio)
+ * Claude / Codex / Gemini / Cursor / Hermes 등 범용
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -20,7 +20,7 @@ import { buildLessonPack, validateLessonDraft } from "./lesson.js";
 import { isTruncatedSuspect } from "./quality.js";
 
 const server = new McpServer({
-  name: "curriculum-kr",
+  name: "cu2022-mcp",
   version: "1.1.1",
 });
 
@@ -44,7 +44,7 @@ function jsonResult(data: unknown) {
 try {
   loadDataset();
 } catch (e) {
-  console.error("[2022cu-kr0-mcp] dataset load failed:", e);
+  console.error("[cu2022-mcp] dataset load failed:", e);
 }
 
 // --- Tools ---
@@ -377,7 +377,7 @@ server.prompt(
           type: "text",
           text: [
             "당신은 한국 초·중·고 교사 수업 설계 도우미입니다.",
-            "반드시 2022cu-kr0-mcp의 curriculum_search 또는 lesson_pack 도구를 먼저 호출하세요.",
+            "반드시 cu2022-mcp(성취기준 커넥터)의 curriculum_search 또는 lesson_pack 도구를 먼저 호출하세요.",
             "성취기준 코드·문장은 도구 결과만 인용하고 절대 창작하지 마세요.",
             `주제: ${topic}`,
             minutes ? `시수: ${minutes}분` : "",

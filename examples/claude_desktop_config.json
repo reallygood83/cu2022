@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "curriculum-kr": {
+    "cu2022-mcp": {
       "command": "npx",
       "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
     }

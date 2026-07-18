@@ -1,11 +1,11 @@
 {
-  "name": "2022cu-kr0-mcp",
+  "name": "cu2022-mcp",
   "version": "1.1.1",
-  "description": "기준인용 MCP (CiteCurriculum KR) — 2022 개정 교육과정 성취기준 검색·Lesson Pack·cite-only 검증",
+  "description": "성취기준 커넥터 (cu2022-mcp) — 2022 개정 교육과정 성취기준 검색·Lesson Pack·cite-only 검증",
   "type": "module",
   "bin": {
-    "2022cu-kr0-mcp": "./dist/index.js",
-    "cu2022-mcp": "./dist/index.js"
+    "cu2022-mcp": "./dist/index.js",
+    "2022cu-kr0-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -30,6 +30,8 @@
   },
   "keywords": [
     "mcp",
+    "cu2022-mcp",
+    "성취기준 커넥터",
     "curriculum",
     "korea",
     "2022",

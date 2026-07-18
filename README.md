@@ -1,4 +1,4 @@
-# 기준인용 MCP · CiteCurriculum KR
+# 성취기준 커넥터 · cu2022-mcp
 
 **2022 개정 교육과정 성취기준을 AI 에이전트에 안전하게 연결하는 MCP 서버**
 
@@ -12,11 +12,11 @@
 
 | | |
 |--|--|
-| **한글명** | 기준인용 MCP |
-| **영문명** | CiteCurriculum KR |
-| **패키지/리포** | `2022CU-kr0-mcp` (호환 유지) |
-| **설정 키 권장** | `curriculum-kr` |
-| **CLI** | `cu2022-mcp` / `2022cu-kr0-mcp` |
+| **공식 명칭** | **`cu2022-mcp`** |
+| **한글 표기** | **성취기준 커넥터** |
+| **의미** | 2022 개정 성취기준을 cite-only로 에이전트에 연결 |
+| **CLI** | `cu2022-mcp` |
+| **GitHub 리포** | `2022CU-kr0-mcp` (URL 호환 유지) |
 
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)
 
@@ -24,7 +24,7 @@
 
 ## 한 줄 요약
 
-| 문제 | 이 MCP |
+| 문제 | 성취기준 커넥터 (`cu2022-mcp`) |
 |------|--------|
 | 모델이 `6수01-99` 같은 **가짜 코드**를 씀 | 검색·조회 결과의 **code/text만** 인용 |
 | 수업안이 기준과 따로 놀음 | `lesson_pack` → 인용 → 오개념 → 활동 → 형성평가 |
@@ -45,7 +45,7 @@
 ```json
 {
   "mcpServers": {
-    "curriculum-kr": {
+    "cu2022-mcp": {
       "command": "npx",
       "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
     }
@@ -65,7 +65,7 @@ npm run build
 ```json
 {
   "mcpServers": {
-    "curriculum-kr": {
+    "cu2022-mcp": {
       "command": "node",
       "args": ["/absolute/path/to/2022CU-kr0-mcp/dist/index.js"]
     }
@@ -78,14 +78,14 @@ npm run build
 | 클라이언트 | 설정 위치 / 방법 |
 |------------|------------------|
 | Claude Desktop | `claude_desktop_config.json` → `mcpServers` |
-| Claude Code | `.mcp.json` 또는 `claude mcp add curriculum-kr -- …` |
+| Claude Code | `.mcp.json` 또는 `claude mcp add cu2022-mcp -- …` |
 | Cursor | Settings → MCP |
 | Codex / Gemini / 기타 | stdio MCP `command` + `args` 지원 시 동일 |
 
 예 (Claude Code, 로컬):
 
 ```bash
-claude mcp add curriculum-kr -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
+claude mcp add cu2022-mcp -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
 ```
 
 예제 JSON: [`examples/`](examples/)
@@ -117,7 +117,7 @@ claude mcp add curriculum-kr -- node /absolute/path/to/2022CU-kr0-mcp/dist/index
 에이전트에게:
 
 ```text
-lesson_pack으로 "5학년 분수, 부진 포함 45분" 수업 골격을 만들고,
+cu2022-mcp의 lesson_pack으로 "5학년 분수, 부진 포함 45분" 수업 골격을 만들고,
 citationTexts의 코드·문장만 인용한 뒤 lesson_pack_validate로 검사해 줘.
 ```
 
@@ -186,16 +186,13 @@ npm run build
 
 ---
 
-## 이름 안내
+## 명칭
 
 | 부르는 말 | 설명 |
 |-----------|------|
-| **기준인용 MCP** | 제품·문서에서 권장하는 한글명 (cite-only 약속) |
-| **CiteCurriculum KR** | 영문·해외 클라이언트용 |
-| `curriculum-kr` | MCP 설정 JSON 키 권장값 |
-| `2022CU-kr0-mcp` | GitHub 리포·npm 패키지 id (기존 호환) |
-
-다른 별칭 후보: *성취기준 커넥터*, *CU2022 MCP*, *Standards-KR MCP* — 의미는 동일합니다.
+| **`cu2022-mcp`** | **공식 명칭** — 패키지·CLI·MCP 설정 키 |
+| **성취기준 커넥터** | 한글 제품 표기 (소개·매뉴얼·발표) |
+| `2022CU-kr0-mcp` | GitHub 리포지토리 이름 (기존 URL 유지) |
 
 ---
 

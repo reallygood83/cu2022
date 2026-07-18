@@ -110,7 +110,7 @@ mkdirSync(join(root, "qa"), { recursive: true });
 writeFileSync(join(root, "qa/mcp-tool-matrix.json"), JSON.stringify(report, null, 2));
 writeFileSync(
   join(root, "qa/mcp-qa-artifact.md"),
-  `# 2022CU-kr0-mcp QA\n\npass: **${report.pass}** (${passed}/${checks.length})\n\n` +
+  `# cu2022-mcp QA (성취기준 커넥터)\n\npass: **${report.pass}** (${passed}/${checks.length})\n\n` +
     checks.map((c) => `- [${c.pass ? "PASS" : "FAIL"}] ${c.name} ${c.detail || ""}`).join("\n") +
     "\n",
 );
