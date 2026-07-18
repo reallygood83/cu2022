@@ -1,7 +1,7 @@
 {
   "name": "2022cu-kr0-mcp",
   "version": "1.1.1",
-  "description": "2022 개정 교육과정 성취기준 MCP — 초·중·고 검색·Lesson Pack·교사 워크플로 (Claude for Teachers 한국형)",
+  "description": "기준인용 MCP (CiteCurriculum KR) — 2022 개정 교육과정 성취기준 검색·Lesson Pack·cite-only 검증",
   "type": "module",
   "bin": {
     "2022cu-kr0-mcp": "./dist/index.js",
@@ -11,6 +11,9 @@
   "files": [
     "dist",
     "data",
+    "docs",
+    "examples",
+    "qa",
     "README.md",
     "LICENSE"
   ],
@@ -30,10 +33,11 @@
     "curriculum",
     "korea",
     "2022",
-    "education",
     "성취기준",
-    "claude",
-    "teachers"
+    "교육과정",
+    "cite-only",
+    "teachers",
+    "standards"
   ],
   "author": "reallygood83",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "2022cu-kr0": {
+    "curriculum-kr": {
       "command": "node",
       "args": ["${workspaceFolder}/dist/index.js"]
     }

@@ -20,8 +20,8 @@ import { buildLessonPack, validateLessonDraft } from "./lesson.js";
 import { isTruncatedSuspect } from "./quality.js";
 
 const server = new McpServer({
-  name: "2022cu-kr0-mcp",
-  version: "1.1.0",
+  name: "curriculum-kr",
+  version: "1.1.1",
 });
 
 const schoolLevelSchema = z

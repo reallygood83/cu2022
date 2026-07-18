@@ -1,6 +1,6 @@
 {
   "builtAt": "2026-07-18T13:06:38.595Z",
-  "sourceRoot": "/Users/moon/Documents/LearningMaster/001-PublicDocu",
+  "sourceRoot": "(bundled index; rebuild via CU2022_SOURCE_ROOT)",
   "total": 45468,
   "byLevel": {
     "elementary": 611,
@@ -9,7 +9,7 @@
   },
   "subjectCount": 24,
   "version": "1.1.1",
-  "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부/NCIC. v1.1 품질 플래그·멀티소스 복구.",
+  "note": "2022 개정 교육과정 성취기준 인덱스. 원문 근거는 교육부 고시·공식 교육과정 문서. v1.1.1 품질 플래그·멀티소스 복구.",
   "repairedAt": "2026-07-18T13:41:55.448549+00:00",
   "repair": {
     "totalRepaired": 488,
@@ -42,7 +42,7 @@
     "middleTruncated": 0,
     "highTruncated": 1299,
     "highCompletePct": 97.07,
-    "highGeneralCompletePct": 100.0,
+    "highGeneralCompletePct": 100,
     "highGeneralTotal": 3120,
     "note": "v1.1.1 일반교과 잔여 해소(~99.9%+). 전문교과는 재분류·플래그."
   }

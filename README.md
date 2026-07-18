@@ -1,34 +1,51 @@
-# 2022CU-kr0-mcp
+# 기준인용 MCP · CiteCurriculum KR
 
-**2022 개정 교육과정 성취기준 MCP 서버**  
-초·중·고 성취기준 검색 · Lesson Pack · 평가/가정안내 골격  
-→ *Claude for Teachers* 스타일의 **한국형 커리큘럼 커넥터**를 모든 MCP 클라이언트에서 사용
+**2022 개정 교육과정 성취기준을 AI 에이전트에 안전하게 연결하는 MCP 서버**
+
+> AI가 성취기준 **코드를 지어내지 못하게** 하고,  
+> **인덱스에 있는 코드·문장만** 검색·인용·수업 골격에 쓰게 합니다.
 
 [![MCP](https://img.shields.io/badge/MCP-stdio-blue)](https://modelcontextprotocol.io)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.1.1-informational)](package.json)
 
-## 왜 쓰나요?
+| | |
+|--|--|
+| **한글명** | 기준인용 MCP |
+| **영문명** | CiteCurriculum KR |
+| **패키지/리포** | `2022CU-kr0-mcp` (호환 유지) |
+| **설정 키 권장** | `curriculum-kr` |
+| **CLI** | `cu2022-mcp` / `2022cu-kr0-mcp` |
+
+📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)
+
+---
+
+## 한 줄 요약
 
 | 문제 | 이 MCP |
 |------|--------|
-| AI가 성취기준 코드를 지어냄 | **인덱스에 있는 코드·문장만** 검색·인용 |
-| 툴 진열만 있고 수업 흐름이 없음 | `lesson_pack`으로 **인용→오개념→활동→평가** |
-| 학부모 안내 톤이 불안정 | `parent_notice_draft` 안심 문체 골격 |
+| 모델이 `6수01-99` 같은 **가짜 코드**를 씀 | 검색·조회 결과의 **code/text만** 인용 |
+| 수업안이 기준과 따로 놀음 | `lesson_pack` → 인용 → 오개념 → 활동 → 형성평가 |
+| 안내문·평가 톤이 들쑥날쑥 | `parent_notice_draft` / `assessment_scaffold` 골격 |
+| “이 초안 코드 맞나?” | `lesson_pack_validate` **cite-only 검증** |
 
-**데이터:** 초등 611 · 중등 580 · 고등 44,000+ (일반+전문 포함, 빌드 시 로컬 원문 기준)
+**번들 데이터(대략):** 초등 ~600 · 중등 ~580 · 고등 4만+ 코드 (일반·전문 포함)  
+**품질 힌트:** 초·중 본문 안정 · 고등 일반교과 우선 · 전문교과는 검색 감점·품질 플래그
 
-## 설치 (30초)
+---
 
-### 요구 사항
-- Node.js **18+**
-- 네트워크 (최초 `npx`/`npm` 시)
+## 빠른 설치
 
-### 방법 A — npx (권장, 클로드/커서/코덱스 설정에 그대로)
+**요구:** Node.js 18+
+
+### A. npx (권장)
 
 ```json
 {
   "mcpServers": {
-    "2022cu-kr0": {
+    "curriculum-kr": {
       "command": "npx",
       "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
     }
@@ -36,10 +53,7 @@
 }
 ```
 
-> 패키지가 npm에 배포되기 전에는 `github:reallygood83/2022CU-kr0-mcp` 사용.  
-> 로컬 클론 시 아래 B 방법.
-
-### 방법 B — 로컬 클론
+### B. 로컬 클론
 
 ```bash
 git clone https://github.com/reallygood83/2022CU-kr0-mcp.git
@@ -51,139 +65,154 @@ npm run build
 ```json
 {
   "mcpServers": {
-    "2022cu-kr0": {
+    "curriculum-kr": {
       "command": "node",
-      "args": ["/절대경로/2022CU-kr0-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/2022CU-kr0-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-### 클라이언트별 설정 위치
+### 클라이언트별 설정
 
-| 클라이언트 | 설정 파일 / 방법 |
+| 클라이언트 | 설정 위치 / 방법 |
 |------------|------------------|
-| **Claude Desktop** | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) |
-| **Claude Code** | `.mcp.json` 또는 `claude mcp add` |
-| **Cursor** | Settings → MCP → 위 JSON |
-| **Codex CLI** | MCP 설정에 stdio 서버 등록 (문서의 mcpServers) |
-| **Gemini CLI** | MCP 확장/설정에 command+args 등록 |
-| **Hermes / 기타** | MCP stdio 지원 시 `node dist/index.js` |
+| Claude Desktop | `claude_desktop_config.json` → `mcpServers` |
+| Claude Code | `.mcp.json` 또는 `claude mcp add curriculum-kr -- …` |
+| Cursor | Settings → MCP |
+| Codex / Gemini / 기타 | stdio MCP `command` + `args` 지원 시 동일 |
 
-예: Claude Code
+예 (Claude Code, 로컬):
 
 ```bash
-claude mcp add 2022cu-kr0 -- node /절대경로/2022CU-kr0-mcp/dist/index.js
+claude mcp add curriculum-kr -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
 ```
 
-## 도구 (Tools)
+예제 JSON: [`examples/`](examples/)
 
-| Tool | 설명 |
+---
+
+## 도구 (10)
+
+| Tool | 용도 |
 |------|------|
-| `curriculum_stats` | 데이터셋 통계 |
-| `curriculum_list_subjects` | 학교급별 과목·건수 |
-| `curriculum_search` | 자연어/키워드/코드 검색 (**핵심**, 품질 플래그 포함) |
+| `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) |
 | `curriculum_get` | 코드 단건 조회 |
-| `curriculum_quality` | 잘림·복구·과목별 노이즈 리포트 |
-| `lesson_pack` | 수업 패키지 + **agentGenerationBrief** (호스트 모델 구체화 지시) |
-| `lesson_pack_validate` | 초안 속 성취기준 코드 **cite-only** 검증 |
+| `curriculum_list_subjects` | 학교급별 과목·건수 |
+| `curriculum_stats` | 데이터셋 통계 |
+| `curriculum_quality` | 품질·잘림 의심·완화 정책 리포트 |
+| `lesson_pack` | 수업 패키지 + `agentGenerationBrief` |
+| `lesson_pack_validate` | 초안 속 코드 **cite-only** 검증 |
 | `assessment_scaffold` | 형성·총괄 평가 골격 |
-| `parent_notice_draft` | 학부모 안내문 초안 |
-| `unit_map` | 영역 클러스터 단원 지도 (Marble light) |
+| `parent_notice_draft` | 학부모 안내문 초안 (안심 문체) |
+| `unit_map` | 영역 클러스터 단원 지도 |
 
-## 리소스 / 프롬프트
+**Resource:** `curriculum://meta`  
+**Prompts:** `teacher_lesson_design`, `teacher_parent_notice`
 
-- Resource: `curriculum://meta`
-- Prompt: `teacher_lesson_design`, `teacher_parent_notice`
+---
 
-## 품질 한계를 어떻게 넘나? (v1.1)
-
-| 한계 | 보완 |
-|------|------|
-| PDF 추출 잘림 | 멀티소스 복구(wiki 완전문 · PDF multiline · 탐구/해설 노이즈 제거), `quality=truncated_suspect` 플래그 |
-| 전문교과 노이즈 | 검색 시 전문교과 기본 감점, 일반교과 우선, `curriculum_quality`로 투명 공개 |
-| Lesson Pack이 규칙+검색만 | **오개념/활동 뱅크**, 학습초점(지식·기능·태도·동사), 시수 배분, **`agentGenerationBrief`**로 호스트 LLM이 cite-only 구체화 |
-| 모델이 코드 창작 | **`lesson_pack_validate`** + search 결과의 `citationRule` |
-
-현재 인덱스 품질 대략치 (v1.1.1, `curriculum_quality`로 확인):
-
-- 초·중: 사실상 완전 문장
-- 고등 **일반교과** 완성도 ~**100%** (오분류 전문코드 재분류 + 잔여 복구)
-- 전문교과: 검색 감점·`truncated_suspect` 플래그로 격리 (노이즈 잔존 가능)
-
-## 교사 사용 예시
+## 30초로 써 보기
 
 에이전트에게:
 
 ```text
-lesson_pack 도구로 "5학년 분수, 부진 포함 45분" 수업안을 만들고,
-agentGenerationBrief를 따라 활동을 구체화해.
-성취기준은 citationTexts만 인용하고, 끝난 뒤 lesson_pack_validate로 검사해.
+lesson_pack으로 "5학년 분수, 부진 포함 45분" 수업 골격을 만들고,
+citationTexts의 코드·문장만 인용한 뒤 lesson_pack_validate로 검사해 줘.
 ```
 
 ```text
-curriculum_search로 중2 일차함수 성취기준 찾고
-assessment_scaffold로 형성평가 3문항 골격 만들어줘.
+curriculum_search로 중2 일차함수 성취기준을 찾고
+assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 ```
 
-```text
-curriculum_quality로 데이터 품질 상태를 보고해줘.
-```
+더 많은 시나리오 → [docs/MANUAL.md](docs/MANUAL.md)
 
-## mycl Next (SaaS 데모) 연동 방향
+---
 
-로컬 `http://127.0.0.1:4173/` mycl Next:
+## 설계 원칙
 
-1. **지금:** 에이전트(Claude 등)가 이 MCP로 성취기준·Lesson Pack 생성  
-2. **다음:** mycl 백엔드가 동일 검색 API를 HTTP로 래핑  
-3. **SaaS:** 교사 로그인 → 채팅에서 Lesson Pack 카드 → 문서함 이어달리기  
+1. **Cite-only** — 성취기준 코드·문장은 도구 결과만. 창작 금지.  
+2. **검색 우선** — 생성 전에 `curriculum_search` / `lesson_pack`.  
+3. **품질 투명** — `truncated_suspect` 플래그·검색 감점·`curriculum_quality`.  
+4. **교사 최종 책임** — 보조 도구. 학교 배정표·고시 원문과 대조.  
+5. **개인정보 금지** — 학생 실명·성적·상담 내용을 넣지 말 것.
 
-MCP는 **에이전트 레이어 토대**, mycl은 **교사 UI·업무 완주** 레이어입니다.
+서버 자체는 **LLM을 호출하지 않습니다.** 검색·템플릿·검증은 결정론적입니다.  
+호스트 모델이 `agentGenerationBrief`를 보고 문장만 구체화하면 됩니다.
+
+---
+
+## 품질 (v1.1.1 요약)
+
+| 한계 | 완화 |
+|------|------|
+| PDF 추출 잘림 | 멀티소스 복구, 노이즈 제거, `quality` 플래그 |
+| 전문교과 노이즈 | 검색 감점, 일반교과 우선 |
+| 규칙형 Lesson Pack | 오개념·활동 뱅크 + 호스트 모델 구체화 지시 |
+| 코드 환각 | `lesson_pack_validate` + `citationRule` |
+
+상세는 `curriculum_quality` 도구 또는 `data/quality-report.json` 참고.
+
+---
 
 ## 환경 변수
 
 | 변수 | 설명 |
 |------|------|
 | `CU2022_DATA_PATH` | 커스텀 `standards.json` 경로 |
-| `CU2022_SOURCE_ROOT` | `build:data` 시 md 원본 루트 (기본 LearningMaster PublicDocu) |
-| `CU2022_INCLUDE_PRO` | `0`이면 전문교과 제외하고 인덱스 재빌드 |
+| `CU2022_SOURCE_ROOT` | `npm run build:data` 시 원문 마크다운 루트 (**재인덱싱 시에만**) |
+| `CU2022_INCLUDE_PRO` | `0`이면 전문교과 제외 재빌드 |
 
-데이터 재빌드:
+일반 사용자는 **번들된 `data/standards.json`**만으로 동작합니다. 재빌드가 필요 없습니다.
 
-```bash
-npm run build:data
-npm run build
-```
+---
 
-## 개발
+## 개발 · QA
 
 ```bash
 npm install
+npm run build
+npm start          # stdio MCP
+npm run qa:smoke   # 툴 스모크 (cite-only 포함)
+```
+
+```bash
+# 원문 마크다운이 있을 때만 인덱스 재생성
+export CU2022_SOURCE_ROOT=/path/to/curriculum-md-root
 npm run build:data
 npm run build
-npm start   # stdio MCP
 ```
+
+---
+
+## 이름 안내
+
+| 부르는 말 | 설명 |
+|-----------|------|
+| **기준인용 MCP** | 제품·문서에서 권장하는 한글명 (cite-only 약속) |
+| **CiteCurriculum KR** | 영문·해외 클라이언트용 |
+| `curriculum-kr` | MCP 설정 JSON 키 권장값 |
+| `2022CU-kr0-mcp` | GitHub 리포·npm 패키지 id (기존 호환) |
+
+다른 별칭 후보: *성취기준 커넥터*, *CU2022 MCP*, *Standards-KR MCP* — 의미는 동일합니다.
+
+---
 
 ## 면책
 
-- 성취기준 원문의 **법적 근거는 교육부 고시·NCIC PDF**입니다.
-- 본 도구는 수업·평가 **보조**이며 최종 책임은 교사·학교에 있습니다.
-- 학생 개인정보·성적을 MCP/모델에 넣지 마세요.
+- 성취기준 원문의 **법적 근거는 교육부 고시 및 공식 교육과정 문서**입니다.  
+- 본 소프트웨어는 수업·평가·행정 **보조**이며, 최종 판단·공문 책임은 교사·학교에 있습니다.  
+- 교육과정 텍스트는 **공공 교육과정 인용·연구·수업 준비** 목적입니다.  
+- **학생 개인정보·성적을 도구/모델에 입력하지 마세요.**
 
 ## 라이선스
 
-MIT (코드). 교육과정 텍스트는 공공 교육과정 인용 목적.
+- **코드:** MIT  
+- **교육과정 문구:** 공공 교육과정 출처 표기 하에 인용. 재배포 시 고시·원문 정책을 확인하세요.
 
-## 관련
+## 링크
 
-- 기획: mycl `docs/SERVICE-PLAN-KOREA-CLAUDE-FOR-TEACHERS.md`
-- 원문 데이터: LearningMaster `001-PublicDocu/{초등,중등,고등}교육과정`
-
-## QA
-
-```bash
-npm run build
-npm run qa:smoke   # stdio로 툴 10종 스모크 (cite-only validate 포함)
-```
-
-결과는 `qa/mcp-qa-artifact.md`에 기록됩니다.
+- Repository: https://github.com/reallygood83/2022CU-kr0-mcp  
+- Manual: [docs/MANUAL.md](docs/MANUAL.md)  
+- MCP 사양: https://modelcontextprotocol.io  

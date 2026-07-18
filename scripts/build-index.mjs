@@ -1,13 +1,20 @@
 #!/usr/bin/env node
 /**
- * Build compact curriculum index from local LearningMaster PublicDocu md files.
+ * Build compact curriculum index from local 2022 curriculum markdown sources.
+ * Set CU2022_SOURCE_ROOT to the folder that contains 초등/중등/고등 교육과정 md trees.
  * High school: prefer official combined md; skip mega 전문 if CU2022_SKIP_PRO=1.
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 
-const ROOT = process.env.CU2022_SOURCE_ROOT ||
-  "/Users/moon/Documents/LearningMaster/001-PublicDocu";
+const ROOT = process.env.CU2022_SOURCE_ROOT || "";
+if (!ROOT || !existsSync(ROOT)) {
+  console.error(
+    "CU2022_SOURCE_ROOT must point to a curriculum markdown root (초등/중등/고등 폴더 포함).\n" +
+      "Bundled data/standards.json is enough for normal MCP use — rebuild only when re-indexing.",
+  );
+  process.exit(1);
+}
 const OUT_DIR = join(process.cwd(), "data");
 const SKIP_PRO = process.env.CU2022_SKIP_PRO === "1"; // default include pro codes but can skip for lighter package
 const INCLUDE_PRO = process.env.CU2022_INCLUDE_PRO !== "0"; // default include
