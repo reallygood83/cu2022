@@ -1,15 +1,25 @@
 {
-  "generatedAt": "2026-08-14T14:07:58.420Z",
+  "generatedAt": "2026-08-14T14:12:06.730Z",
   "version": "1.1.1",
   "score": 1,
   "pass": true,
-  "passed": 13,
-  "total": 13,
+  "passed": 15,
+  "total": 15,
   "checks": [
     {
-      "name": "tool_count_10",
+      "name": "tool_count_11",
       "pass": true,
-      "detail": "curriculum_stats,curriculum_list_subjects,curriculum_search,curriculum_get,lesson_pack,lesson_pack_validate,curriculum_quality,assessment_scaffold,parent_notice_draft,unit_map"
+      "detail": "curriculum_stats,curriculum_list_subjects,curriculum_list_courses,curriculum_search,curriculum_get,lesson_pack,lesson_pack_validate,curriculum_quality,assessment_scaffold,parent_notice_draft,unit_map"
+    },
+    {
+      "name": "list_courses_math",
+      "pass": true,
+      "detail": "18 courses"
+    },
+    {
+      "name": "elective_search",
+      "pass": true,
+      "detail": "12확통02-01"
     },
     {
       "name": "stats_total",
@@ -75,6 +85,7 @@
   "tools": [
     "curriculum_stats",
     "curriculum_list_subjects",
+    "curriculum_list_courses",
     "curriculum_search",
     "curriculum_get",
     "lesson_pack",

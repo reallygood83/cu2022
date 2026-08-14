@@ -3,6 +3,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Dataset, SchoolLevel, Standard } from "./types.js";
 import { isTruncatedSuspect } from "./quality.js";
+import {
+  highCourseFor,
+  highCoursePrefix,
+  inferHighCourseFromQuery,
+} from "./highCourses.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -28,8 +33,27 @@ let cache: Dataset | null = null;
 export function loadDataset(): Dataset {
   if (cache) return cache;
   const path = resolveDataPath();
-  cache = JSON.parse(readFileSync(path, "utf8")) as Dataset;
+  const ds = JSON.parse(readFileSync(path, "utf8")) as Dataset;
+  enrichHighCourses(ds);
+  cache = ds;
   return cache;
+}
+
+/**
+ * 고교 성취기준에 선택과목 정보(course/courseType)를 부여하고
+ * 접두 기반으로 오분류된 교과를 교정한다.
+ * (예: 12현윤 '기타'→'도덕', 12독작 '제2외국어'→'국어')
+ * 번들 데이터 재빌드 없이 로드 시점에 결정론적으로 수행.
+ */
+function enrichHighCourses(ds: Dataset): void {
+  for (const s of ds.standards) {
+    if (s.schoolLevel !== "high" || s.subject === "전문교과") continue;
+    const info = highCourseFor(s.code, s.sourceFile, s.text);
+    if (!info) continue;
+    if (info.course) s.course = info.course;
+    s.courseType = info.track;
+    if (info.subject) s.subject = info.subject;
+  }
 }
 
 export function schoolLevelLabel(level: string): string {
@@ -78,6 +102,8 @@ export function searchStandards(opts: {
   query: string;
   schoolLevel?: SchoolLevel;
   subject?: string;
+  /** 고교 과목 필터 (예: 미적분Ⅰ, 확률과 통계, 화법과 언어) */
+  course?: string;
   limit?: number;
 }): Array<Standard & { score: number }> {
   const ds = loadDataset();
@@ -85,8 +111,25 @@ export function searchStandards(opts: {
   const limit = Math.min(opts.limit ?? 10, 50);
   if (!q) return [];
 
+  const courseFilter = opts.course?.replace(/\s+/g, "") || undefined;
+  const inferredCourse = courseFilter ? undefined : inferHighCourseFromQuery(q);
+  const inferredPrefixes = inferredCourse
+    ? new Set(inferredCourse.prefixes)
+    : undefined;
+
+  // 과목명 추론(예: 현대사회와 윤리 → 도덕)이 광역 교과 추론보다 구체적이므로 우선
   const subject =
-    opts.subject?.trim() || inferSubjectFromQuery(q) || undefined;
+    opts.subject?.trim() ||
+    inferredCourse?.subject ||
+    inferSubjectFromQuery(q) ||
+    undefined;
+
+  const matchCourse = (s: Standard): boolean => {
+    if (!courseFilter) return true;
+    if (!s.course) return false;
+    const c = s.course.replace(/\s+/g, "");
+    return c.includes(courseFilter) || courseFilter.includes(c);
+  };
 
   // exact code
   const exact = ds.standards.filter(
@@ -105,9 +148,10 @@ export function searchStandards(opts: {
   for (const s of ds.standards) {
     if (!matchLevel(s, opts.schoolLevel)) continue;
     if (subject && !s.subject.includes(subject)) continue;
+    if (!matchCourse(s)) continue;
 
     let score = 0;
-    const hay = `${s.code} ${s.text} ${s.subject} ${s.domain ?? ""} ${s.gradeBand ?? ""}`;
+    const hay = `${s.code} ${s.text} ${s.subject} ${s.course ?? ""} ${s.domain ?? ""} ${s.gradeBand ?? ""}`;
     const hayNorm = hay.toLowerCase();
 
     if (s.code.includes(q) || q.includes(s.code)) score += 40;
@@ -117,12 +161,27 @@ export function searchStandards(opts: {
       const weak = /^(지도안|수업안|과정안|작성|위한|짜리|관련|대해|대한|있는|하는|하기)$/.test(t);
       if (s.text.includes(t)) score += weak ? 2 : 8;
       if (s.subject.includes(t) || t.includes(s.subject)) score += 10;
+      // 과목명 토큰 매치: 1음절 토큰·교과명과 동일한 과목명은 제외 (초·중 검색 오염 방지)
+      if (
+        s.course &&
+        !weak &&
+        t.length >= 2 &&
+        s.course !== s.subject &&
+        (s.course.includes(t) || t.includes(s.course.replace(/\s+/g, "")))
+      )
+        score += 6;
       if (s.domain?.includes(t)) score += 4;
       if (s.code.includes(t)) score += 10;
       if (hayNorm.includes(t.toLowerCase())) score += weak ? 0 : 2;
     }
     // 교과 명시 시 해당 교과 가산
     if (subject && s.subject.includes(subject)) score += 14;
+    // 고교 선택과목 매칭 가산 (질의에서 과목명 추론 성공 시)
+    if (inferredPrefixes) {
+      const p = highCoursePrefix(s.code);
+      if (p && inferredPrefixes.has(p)) score += 35;
+    }
+    if (courseFilter && s.course) score += 20;
     // grade hints
     if (/초|elem/i.test(q) && s.schoolLevel === "elementary") score += 3;
     if (/중|middle/i.test(q) && s.schoolLevel === "middle") score += 3;
@@ -217,6 +276,50 @@ export function listSubjects(schoolLevel?: SchoolLevel): Array<{
       return { schoolLevel, subject, count };
     })
     .sort((a, b) => a.schoolLevel.localeCompare(b.schoolLevel) || b.count - a.count);
+}
+
+/** 고교 과목(공통·선택·계열) 목록과 건수 */
+export function listCourses(subject?: string): Array<{
+  course: string;
+  subject: string;
+  courseType: string;
+  count: number;
+  codePrefix: string;
+}> {
+  const ds = loadDataset();
+  const map = new Map<
+    string,
+    { course: string; subject: string; courseType: string; count: number; codePrefix: string }
+  >();
+  for (const s of ds.standards) {
+    if (s.schoolLevel !== "high" || !s.course) continue;
+    if (subject && !s.subject.includes(subject)) continue;
+    const prefix = highCoursePrefix(s.code) ?? "";
+    const k = `${s.course}::${s.courseType ?? ""}`;
+    const e = map.get(k);
+    if (e) e.count += 1;
+    else
+      map.set(k, {
+        course: s.course,
+        subject: s.subject,
+        courseType: s.courseType ?? "",
+        count: 1,
+        codePrefix: prefix,
+      });
+  }
+  const trackOrder: Record<string, number> = {
+    공통: 0,
+    일반선택: 1,
+    진로선택: 2,
+    융합선택: 3,
+    "전문(계열)": 4,
+  };
+  return [...map.values()].sort(
+    (a, b) =>
+      a.subject.localeCompare(b.subject, "ko") ||
+      (trackOrder[a.courseType] ?? 9) - (trackOrder[b.courseType] ?? 9) ||
+      a.course.localeCompare(b.course, "ko"),
+  );
 }
 
 export function stats() {

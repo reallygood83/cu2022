@@ -8,7 +8,7 @@
 [![MCP](https://img.shields.io/badge/MCP-stdio-blue)](https://modelcontextprotocol.io)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.2.0-informational)](package.json)
+[![Version](https://img.shields.io/badge/version-1.3.0-informational)](package.json)
 
 | | |
 |--|--|
@@ -93,13 +93,14 @@ claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022-mcp/dist/index.js
 
 ---
 
-## 도구 (10)
+## 도구 (11)
 
 | Tool | 용도 |
 |------|------|
-| `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) |
+| `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) — 고교 선택과목명(미적분Ⅰ, 확률과 통계 등) 인식, `course` 필터 지원 |
 | `curriculum_get` | 코드 단건 조회 |
 | `curriculum_list_subjects` | 학교급별 과목·건수 |
+| `curriculum_list_courses` | **고교 과목 목록** (공통·일반선택·진로선택·융합선택·전문계열) |
 | `curriculum_stats` | 데이터셋 통계 |
 | `curriculum_quality` | 품질·잘림 의심·완화 정책 리포트 |
 | `lesson_pack` | 수업 패키지 + `agentGenerationBrief` |
@@ -172,7 +173,14 @@ assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 
 ---
 
-## 품질 (v1.1.1 요약)
+## 품질 (v1.3.0 요약)
+
+**v1.3.0 — 고교 선택과목 매칭 고도화:**
+- 코드 접두(예: `12미적Ⅰ`, `12확통`, `12현윤`) → 2022 개정 과목 정식 명칭 복원 (`course`/`courseType` 필드, 일반교과 84% 커버)
+- "미적분", "확률과 통계", "화법과 언어", "현대사회와 윤리" 같은 **선택과목명 검색** 지원 (별칭 포함: 확통, 미적, 윤사 등)
+- 접두 기반 **교과 오분류 교정** 약 1,650건 (예: 현대사회와 윤리 `기타`→`도덕`, 독서와 작문 `제2외국어`→`국어`, 영어 독해와 작문 `국어`→`영어`)
+- `curriculum_list_courses` 도구·`curriculum_search`의 `course` 필터 추가
+- 초·중 검색 회귀 방지: 학교급 힌트(예: "중2", "5학년")가 있으면 고교 과목 추론을 생략
 
 | 한계 | 완화 |
 |------|------|

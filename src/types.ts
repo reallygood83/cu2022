@@ -7,6 +7,10 @@ export interface Standard {
   text: string;
   schoolLevel: "elementary" | "middle" | "high";
   subject: string;
+  /** 고교 과목(공통·선택·계열) 정식 명칭 — 코드 접두에서 복원 (예: 미적분Ⅰ, 확률과 통계) */
+  course?: string;
+  /** 고교 과목 구분: 공통 | 일반선택 | 진로선택 | 융합선택 | 전문(계열) */
+  courseType?: string;
   domain?: string;
   gradeBand?: string;
   sourceFile: string;

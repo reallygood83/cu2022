@@ -41,7 +41,25 @@ const pass = (name, cond, detail = "") => {
 
 const tools = await client.listTools();
 const names = tools.tools.map((t) => t.name);
-pass("tool_count_10", names.length === 10, names.join(","));
+pass("tool_count_11", names.length === 11, names.join(","));
+
+// 고교 선택과목 매칭 (v1.3): 과목명 검색·course 필드·목록 도구
+const courses = await call("curriculum_list_courses", { subject: "수학" });
+pass(
+  "list_courses_math",
+  (courses.data.courses ?? []).some((c) => c.course === "미적분Ⅰ"),
+  `${(courses.data.courses ?? []).length} courses`,
+);
+const electiveSearch = await call("curriculum_search", {
+  query: "확률과 통계 조건부확률",
+});
+pass(
+  "elective_search",
+  (electiveSearch.data.results ?? []).some(
+    (r) => r.course === "확률과 통계" && r.code.startsWith("12확통"),
+  ),
+  electiveSearch.data.results?.[0]?.code ?? "no hit",
+);
 
 const stats = await call("curriculum_stats");
 pass("stats_total", (stats.data.total ?? 0) >= 40000, String(stats.data.total));

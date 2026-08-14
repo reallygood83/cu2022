@@ -19,6 +19,8 @@ export interface LessonPack {
     code: string;
     text: string;
     subject: string;
+    course?: string;
+    courseType?: string;
     schoolLevel: string;
     score: number;
     whySelected: string;
@@ -521,6 +523,8 @@ export function buildLessonPack(opts: {
         code: s.code,
         text: s.text,
         subject: s.subject,
+        course: s.course,
+        courseType: s.courseType,
         schoolLevel: schoolLevelLabel(s.schoolLevel),
         score: s.score,
         whySelected:
