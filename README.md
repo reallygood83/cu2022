@@ -16,7 +16,7 @@
 | **한글 표기** | **성취기준 커넥터** |
 | **의미** | 2022 개정 성취기준을 cite-only로 에이전트에 연결 |
 | **CLI** | `cu2022-mcp` (MCP) · **`cu2022-doc`** (터미널 → HWPX) |
-| **GitHub 리포** | `2022CU-kr0-mcp` (URL 호환 유지) |
+| **GitHub 리포** | `cu2022-mcp` (구 `2022CU-kr0-mcp` URL은 자동 리다이렉트) |
 
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
 📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
@@ -48,7 +48,7 @@
   "mcpServers": {
     "cu2022-mcp": {
       "command": "npx",
-      "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
+      "args": ["-y", "github:reallygood83/cu2022-mcp"]
     }
   }
 }
@@ -57,8 +57,8 @@
 ### B. 로컬 클론
 
 ```bash
-git clone https://github.com/reallygood83/2022CU-kr0-mcp.git
-cd 2022CU-kr0-mcp
+git clone https://github.com/reallygood83/cu2022-mcp.git
+cd cu2022-mcp
 npm install
 npm run build
 ```
@@ -68,7 +68,7 @@ npm run build
   "mcpServers": {
     "cu2022-mcp": {
       "command": "node",
-      "args": ["/absolute/path/to/2022CU-kr0-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/cu2022-mcp/dist/index.js"]
     }
   }
 }
@@ -86,7 +86,7 @@ npm run build
 예 (Claude Code, 로컬):
 
 ```bash
-claude mcp add cu2022-mcp -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
+claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022-mcp/dist/index.js
 ```
 
 예제 JSON: [`examples/`](examples/)
@@ -221,7 +221,7 @@ npm run build
 |-----------|------|
 | **`cu2022-mcp`** | **공식 명칭** — 패키지·CLI·MCP 설정 키 |
 | **성취기준 커넥터** | 한글 제품 표기 (소개·매뉴얼·발표) |
-| `2022CU-kr0-mcp` | GitHub 리포지토리 이름 (기존 URL 유지) |
+| `cu2022-mcp` | GitHub 리포지토리 이름 (구 `2022CU-kr0-mcp` 링크는 자동 리다이렉트) |
 
 ---
 
@@ -239,6 +239,6 @@ npm run build
 
 ## 링크
 
-- Repository: https://github.com/reallygood83/2022CU-kr0-mcp  
+- Repository: https://github.com/reallygood83/cu2022-mcp  
 - Manual: [docs/MANUAL.md](docs/MANUAL.md)  
 - MCP 사양: https://modelcontextprotocol.io  

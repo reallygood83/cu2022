@@ -1,4 +1,4 @@
-# 2022CU-kr0-mcp QA
+# cu2022-mcp QA (성취기준 커넥터)
 
 pass: **true** (13/13)
 
