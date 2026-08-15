@@ -3,6 +3,7 @@
 **공식 명칭:** `cu2022-mcp`  
 **대상:** 초·중·고 교사, 교육 연구자, 에듀테크 개발자, AI 에이전트 사용자  
 **전제:** MCP 클라이언트에 `cu2022-mcp` 서버가 연결되어 있음  
+**설치:** [README 설치 안내](../README.md#설치-복붙-한-번이면-됩니다) — JSON 복붙 + 앱 재시작. 클론 불필요.  
 **관련:** [README.md](../README.md)
 
 ---
@@ -242,7 +243,8 @@ lesson_pack_validate
 |------------|-----|
 | Claude Desktop / Code | 프롬프트에 “반드시 cu2022-mcp 도구 먼저”를 시스템·프로젝트 규칙에 고정 |
 | Cursor | 리포 규칙에 cite-only 워크플로 명시 |
-| Codex CLI | MCP 서버 키 `cu2022-mcp`로 등록 후 동일 도구명 사용 |
+| Codex CLI / ChatGPT 데스크톱 | `codex mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022` |
+| ChatGPT 웹·앱 | HTTP `/mcp` 커넥터 + `search`/`fetch`. [docs/CHATGPT.md](CHATGPT.md) |
 | 자체 앱 | stdio 대신 동일 함수를 HTTP로 감싸도 스키마 유지 |
 
 ---
@@ -251,6 +253,9 @@ lesson_pack_validate
 
 **Q. 인터넷이 필요한가?**  
 A. 런타임은 로컬 인덱스만 사용합니다. `npx github:…` 최초 설치 시에만 네트워크가 필요합니다.
+
+**Q. 설치가 복잡한가?**  
+A. 아닙니다. Node.js 18+가 있으면 JSON을 한 번 붙여 넣고 앱을 재시작하면 됩니다. 클론·빌드는 개발할 때만 필요합니다. 자세한 단계는 [README 설치](../README.md#설치-복붙-한-번이면-됩니다)를 보세요.
 
 **Q. 우리 학교 배정 성취기준과 다르면?**  
 A. 정상입니다. 국정·고시 문장과 학교 배정표는 다를 수 있습니다. **배정표를 우선**하고, 본 도구는 고시 언어 참고용입니다.

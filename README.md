@@ -5,10 +5,10 @@
 > AI가 성취기준 **코드를 지어내지 못하게** 하고,  
 > **인덱스에 있는 코드·문장만** 검색·인용·수업 골격에 쓰게 합니다.
 
-[![MCP](https://img.shields.io/badge/MCP-stdio-blue)](https://modelcontextprotocol.io)
+[![MCP](https://img.shields.io/badge/MCP-stdio%20%2B%20HTTP-blue)](https://modelcontextprotocol.io)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.2.0-informational)](package.json)
+[![Version](https://img.shields.io/badge/version-1.4.0-informational)](package.json)
 
 | | |
 |--|--|
@@ -16,10 +16,12 @@
 | **한글 표기** | **성취기준 커넥터** |
 | **의미** | 2022 개정 성취기준을 cite-only로 에이전트에 연결 |
 | **CLI** | `cu2022-mcp` (MCP) · **`cu2022-doc`** (터미널 → HWPX) |
-| **GitHub 리포** | `2022CU-kr0-mcp` (URL 호환 유지) |
+| **GitHub 리포** | [`reallygood83/cu2022`](https://github.com/reallygood83/cu2022) (구 `2022CU-kr0-mcp` 는 리다이렉트) |
 
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
 📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
+
+**설치:** Node.js 18+ → Cursor / Claude / Codex는 JSON·한 줄 명령. **ChatGPT 앱**은 HTTP `/mcp` 커넥터. [자세히](#설치-복붙-한-번이면-됩니다)
 
 ---
 
@@ -37,69 +39,137 @@
 
 ---
 
-## 빠른 설치
+## 설치 (복붙 한 번이면 됩니다)
 
-**요구:** Node.js 18+
+**클론·빌드 없이** `npx`로 바로 붙입니다. Node.js 18+만 있으면 됩니다.
 
-### A. npx (권장)
+```bash
+node -v   # v18 이상이면 OK. 없으면 https://nodejs.org 에서 LTS 설치
+```
+
+아래 JSON을 쓰는 앱에 붙여 넣고, **앱을 한 번 재시작**하세요.
 
 ```json
 {
   "mcpServers": {
     "cu2022-mcp": {
       "command": "npx",
-      "args": ["-y", "github:reallygood83/2022CU-kr0-mcp"]
+      "args": ["-y", "github:reallygood83/cu2022"]
     }
   }
 }
 ```
 
-### B. 로컬 클론
+> GitHub 리포 이름은 **`cu2022`** 입니다. MCP 설정 키·패키지 이름은 **`cu2022-mcp`** 입니다. 옛 주소 `2022CU-kr0-mcp` 도 리다이렉트됩니다.
+
+### Cursor
+
+1. **Settings → MCP → New MCP Server** (또는 `~/.cursor/mcp.json` 을 직접 엽니다)
+2. 위 JSON을 그대로 붙여 넣습니다. 이미 `mcpServers`가 있으면 `cu2022-mcp` 블록만 추가합니다.
+3. Cursor를 재시작한 뒤 MCP 목록에서 `cu2022-mcp`가 초록(연결됨)인지 확인합니다.
+
+예제: [`examples/cursor_mcp.json`](examples/cursor_mcp.json)
+
+### Claude Desktop
+
+1. 설정 파일을 엽니다.
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+2. 위 JSON을 붙여 넣습니다 (`mcpServers`에 합치기).
+3. Claude Desktop을 **완전히 종료했다가** 다시 켭니다.
+
+예제: [`examples/claude_desktop_config.json`](examples/claude_desktop_config.json)
+
+### Claude Code
+
+프로젝트 폴더에서 한 줄이면 됩니다.
 
 ```bash
-git clone https://github.com/reallygood83/2022CU-kr0-mcp.git
-cd 2022CU-kr0-mcp
+claude mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022
+```
+
+또는 프로젝트 `.mcp.json`에 같은 JSON을 넣습니다. 예제: [`examples/claude_code_mcp.json`](examples/claude_code_mcp.json)
+
+### ChatGPT 앱 (검색 가능)
+
+ChatGPT 웹·모바일 앱은 **로컬 npx가 아니라 공개 HTTPS MCP**에 붙습니다. 이 서버는 ChatGPT 커넥터용 `search` / `fetch` 도구를 제공합니다.
+
+1. 서버를 HTTP로 띄웁니다.
+
+```bash
+git clone https://github.com/reallygood83/cu2022.git
+cd cu2022
 npm install
 npm run build
+# 공개 URL을 인용 링크로 쓰려면 설정
+export CU2022_PUBLIC_URL=https://your-host.example
+npm run start:http    # 기본 http://0.0.0.0:8787
 ```
 
-```json
-{
-  "mcpServers": {
-    "cu2022-mcp": {
-      "command": "node",
-      "args": ["/absolute/path/to/2022CU-kr0-mcp/dist/index.js"]
-    }
-  }
-}
-```
+2. HTTPS로 노출합니다 (하나만 고르면 됩니다).
+   - 로컬 시험: `npx --yes cloudflared tunnel --url http://localhost:8787`
+   - 상시: Railway / Fly / Render 등에 배포. 예제 [`Dockerfile`](Dockerfile)
+3. ChatGPT에서 **Settings → Apps → Create**(또는 **Connectors → Developer mode**) → 커넥터 추가.
+4. MCP URL에 `https://YOUR-HOST/mcp` 를 넣습니다. 인증은 없음(공개 교육과정 데이터).
+5. 도구 스캔이 끝나면 새 대화에서 `@cu2022-mcp` 또는 앱 목록에서 **성취기준**을 고르고  
+   `5학년 분수 성취기준 찾아줘` 처럼 검색합니다.
 
-### 클라이언트별 설정
-
-| 클라이언트 | 설정 위치 / 방법 |
-|------------|------------------|
-| Claude Desktop | `claude_desktop_config.json` → `mcpServers` |
-| Claude Code | `.mcp.json` 또는 `claude mcp add cu2022-mcp -- …` |
-| Cursor | Settings → MCP |
-| Codex / Gemini / 기타 | stdio MCP `command` + `args` 지원 시 동일 |
-
-예 (Claude Code, 로컬):
+ChatGPT **데스크톱 앱 + Codex**는 로컬 stdio로도 됩니다.
 
 ```bash
-claude mcp add cu2022-mcp -- node /absolute/path/to/2022CU-kr0-mcp/dist/index.js
+codex mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022
 ```
 
-예제 JSON: [`examples/`](examples/)
+또는 `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.cu2022-mcp]
+command = "npx"
+args = ["-y", "github:reallygood83/cu2022"]
+```
+
+예제: [`examples/codex_config.toml`](examples/codex_config.toml) · 상세 [`docs/CHATGPT.md`](docs/CHATGPT.md)
+
+### Codex CLI / IDE
+
+위 `codex mcp add` 한 줄과 동일합니다. TUI에서 `/mcp`로 연결을 확인하세요.
+
+### 설치됐는지 확인
+
+에이전트에게 이렇게 물어보세요.
+
+```text
+cu2022-mcp의 curriculum_stats를 호출해서 성취기준 건수를 보여 줘.
+```
+
+초·중·고 건수가 나오면 성공입니다. 이어서:
+
+```text
+curriculum_search로 "5학년 분수" 성취기준을 찾아 줘.
+```
+
+### 안 될 때
+
+| 증상 | 해결 |
+|------|------|
+| `node` 명령을 찾을 수 없음 | [Node.js LTS](https://nodejs.org) 설치 후 터미널·앱을 재시작 |
+| MCP가 회색/오류 | 앱 완전 재시작. 첫 `npx`는 다운로드라 **1~2분** 걸릴 수 있음 |
+| `npx` / GitHub 404 | args를 `["-y", "github:reallygood83/cu2022"]` 로 확인하세요 (옛 이름 `2022CU-kr0-mcp` 도 동작) |
+| 도구가 안 보임 | 설정 JSON 문법(쉼표·중괄호) 확인 후 다시 저장 |
+
+개발용으로 소스를 받아 돌리려면 [아래 로컬 클론](#로컬-클론-개발용)을 보세요.
 
 ---
 
-## 도구 (10)
+## 도구 (13)
 
 | Tool | 용도 |
 |------|------|
-| `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) |
+| `search` / `fetch` | **ChatGPT 앱·커넥터용** 검색/본문 (id·title·url) |
+| `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) — 고교 선택과목명(미적분Ⅰ, 확률과 통계 등) 인식, `course` 필터 지원 |
 | `curriculum_get` | 코드 단건 조회 |
 | `curriculum_list_subjects` | 학교급별 과목·건수 |
+| `curriculum_list_courses` | **고교 과목 목록** (공통·일반선택·진로선택·융합선택·전문계열) |
 | `curriculum_stats` | 데이터셋 통계 |
 | `curriculum_quality` | 품질·잘림 의심·완화 정책 리포트 |
 | `lesson_pack` | 수업 패키지 + `agentGenerationBrief` |
@@ -172,7 +242,14 @@ assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 
 ---
 
-## 품질 (v1.1.1 요약)
+## 품질 (v1.3.0 요약)
+
+**v1.3.0 — 고교 선택과목 매칭 고도화:**
+- 코드 접두(예: `12미적Ⅰ`, `12확통`, `12현윤`) → 2022 개정 과목 정식 명칭 복원 (`course`/`courseType` 필드, 일반교과 84% 커버)
+- "미적분", "확률과 통계", "화법과 언어", "현대사회와 윤리" 같은 **선택과목명 검색** 지원 (별칭 포함: 확통, 미적, 윤사 등)
+- 접두 기반 **교과 오분류 교정** 약 1,650건 (예: 현대사회와 윤리 `기타`→`도덕`, 독서와 작문 `제2외국어`→`국어`, 영어 독해와 작문 `국어`→`영어`)
+- `curriculum_list_courses` 도구·`curriculum_search`의 `course` 필터 추가
+- 초·중 검색 회귀 방지: 학교급 힌트(예: "중2", "5학년")가 있으면 고교 과목 추론을 생략
 
 | 한계 | 완화 |
 |------|------|
@@ -196,6 +273,33 @@ assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 일반 사용자는 **번들된 `data/standards.json`**만으로 동작합니다. 재빌드가 필요 없습니다.
 
 ---
+
+## 로컬 클론 (개발용)
+
+소스 수정·QA가 필요할 때만 클론합니다. 일반 사용은 [위 npx 설치](#설치-복붙-한-번이면-됩니다)면 충분합니다.
+
+```bash
+git clone https://github.com/reallygood83/cu2022.git
+cd cu2022
+npm install
+npm run build
+```
+
+```json
+{
+  "mcpServers": {
+    "cu2022-mcp": {
+      "command": "node",
+      "args": ["/absolute/path/to/cu2022/dist/index.js"]
+    }
+  }
+}
+```
+
+```bash
+# Claude Code (로컬 빌드)
+claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022/dist/index.js
+```
 
 ## 개발 · QA
 
@@ -221,7 +325,7 @@ npm run build
 |-----------|------|
 | **`cu2022-mcp`** | **공식 명칭** — 패키지·CLI·MCP 설정 키 |
 | **성취기준 커넥터** | 한글 제품 표기 (소개·매뉴얼·발표) |
-| `2022CU-kr0-mcp` | GitHub 리포지토리 이름 (기존 URL 유지) |
+| `cu2022` | GitHub 리포지토리 이름 (패키지·MCP 키는 `cu2022-mcp`. 구 `2022CU-kr0-mcp` 는 리다이렉트) |
 
 ---
 
@@ -239,6 +343,6 @@ npm run build
 
 ## 링크
 
-- Repository: https://github.com/reallygood83/2022CU-kr0-mcp  
+- Repository: https://github.com/reallygood83/cu2022  
 - Manual: [docs/MANUAL.md](docs/MANUAL.md)  
 - MCP 사양: https://modelcontextprotocol.io  

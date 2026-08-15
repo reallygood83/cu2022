@@ -9,6 +9,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import {
   getByCode,
+  listCourses,
   listSubjects,
   loadDataset,
   qualityReport,
@@ -18,11 +19,20 @@ import {
 } from "./data.js";
 import { buildLessonPack, validateLessonDraft } from "./lesson.js";
 import { isTruncatedSuspect } from "./quality.js";
+import { chatgptFetch, chatgptSearch } from "./chatgpt.js";
 
-const server = new McpServer({
-  name: "cu2022-mcp",
-  version: "1.1.1",
-});
+export function createCu2022Server() {
+const server = new McpServer(
+  {
+    name: "cu2022-mcp",
+    version: "1.4.0",
+    websiteUrl: "https://github.com/reallygood83/cu2022",
+  },
+  {
+    instructions:
+      "2022 개정 교육과정 성취기준 커넥터. ChatGPT는 search로 찾고 fetch로 본문을 읽으세요. 성취기준 코드·문장은 도구 결과만 인용하고 절대 창작하지 마세요.",
+  },
+);
 
 const schoolLevelSchema = z
   .enum(["elementary", "middle", "high", "all"])
@@ -69,21 +79,46 @@ server.tool(
 );
 
 server.tool(
+  "curriculum_list_courses",
+  "고등학교 과목(공통·일반선택·진로선택·융합선택·전문계열) 목록과 성취기준 건수를 반환합니다. 예: 미적분Ⅰ, 확률과 통계, 화법과 언어, 현대사회와 윤리.",
+  {
+    subject: z
+      .string()
+      .optional()
+      .describe("교과 필터 예: 수학, 국어, 사회, 과학"),
+  },
+  async ({ subject }) =>
+    jsonResult({
+      courses: listCourses(subject),
+      note: "course 값을 curriculum_search의 course 파라미터로 사용할 수 있습니다.",
+    }),
+);
+
+server.tool(
   "curriculum_search",
-  "자연어·키워드·코드로 2022 개정 성취기준을 검색합니다. 생성 시 반드시 이 결과의 code/text만 인용하세요.",
+  "자연어·키워드·코드로 2022 개정 성취기준을 검색합니다. 고교 선택과목명(미적분Ⅰ, 확률과 통계, 화법과 언어 등)도 인식합니다. 생성 시 반드시 이 결과의 code/text만 인용하세요.",
   {
     query: z
       .string()
-      .describe("검색어 예: '5학년 분수', '9수02-15', '중2 일차함수'"),
+      .describe(
+        "검색어 예: '5학년 분수', '9수02-15', '중2 일차함수', '미적분 수열의 극한', '확률과 통계 조건부확률'",
+      ),
     schoolLevel: schoolLevelSchema,
-    subject: z.string().optional().describe("과목 필터 예: 수학, 국어"),
+    subject: z.string().optional().describe("교과 필터 예: 수학, 국어"),
+    course: z
+      .string()
+      .optional()
+      .describe(
+        "고교 과목 필터 예: 미적분Ⅰ, 확률과 통계, 화법과 언어, 현대사회와 윤리 (curriculum_list_courses로 목록 확인)",
+      ),
     limit: z.number().int().min(1).max(50).optional().describe("결과 개수 기본 10"),
   },
-  async ({ query, schoolLevel, subject, limit }) => {
+  async ({ query, schoolLevel, subject, course, limit }) => {
     const results = searchStandards({
       query,
       schoolLevel: schoolLevel ?? "all",
       subject,
+      course,
       limit,
     });
     return jsonResult({
@@ -95,6 +130,8 @@ server.tool(
         schoolLevel: r.schoolLevel,
         schoolLevelKo: schoolLevelLabel(r.schoolLevel),
         subject: r.subject,
+        course: r.course,
+        courseType: r.courseType,
         domain: r.domain,
         gradeBand: r.gradeBand,
         score: r.score,
@@ -133,6 +170,63 @@ server.tool(
         schoolLevelKo: schoolLevelLabel(hit.schoolLevel),
       },
     });
+  },
+);
+
+// ChatGPT 앱·커넥터 호환 (search / fetch). Deep Research·커넥터 검색에 사용.
+server.registerTool(
+  "search",
+  {
+    title: "성취기준 검색",
+    description:
+      "2022 개정 교육과정 성취기준을 검색합니다. 예: '5학년 분수', '중2 일차함수', '미적분 수열의 극한'. 결과는 id(코드)·title·url 입니다. 본문은 fetch로 가져오세요.",
+    inputSchema: {
+      query: z.string().describe("자연어 검색어 또는 성취기준 코드"),
+    },
+    outputSchema: {
+      results: z.array(
+        z.object({
+          id: z.string(),
+          title: z.string(),
+          url: z.string(),
+        }),
+      ),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  },
+  async ({ query }) => {
+    const payload = chatgptSearch(query);
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(payload) }],
+      structuredContent: payload,
+    };
+  },
+);
+
+server.registerTool(
+  "fetch",
+  {
+    title: "성취기준 본문",
+    description:
+      "search 결과의 id(성취기준 코드)로 원문 전체를 가져옵니다. 코드·문장만 인용하세요.",
+    inputSchema: {
+      id: z.string().describe("search가 반환한 id(코드) 또는 /s/{코드} URL"),
+    },
+    outputSchema: {
+      id: z.string(),
+      title: z.string(),
+      text: z.string(),
+      url: z.string(),
+      metadata: z.record(z.unknown()).optional(),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  },
+  async ({ id }) => {
+    const payload = chatgptFetch(id);
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(payload) }],
+      structuredContent: payload,
+    };
   },
 );
 
@@ -411,12 +505,25 @@ server.prompt(
   }),
 );
 
+  return server;
+}
+
 async function main() {
+  if (process.argv.includes("--http")) {
+    const { startHttpServer } = await import("./http.js");
+    await startHttpServer();
+    return;
+  }
+  const server = createCu2022Server();
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+const isMain =
+  /(?:^|[\\/])index\.(js|ts)$/.test(process.argv[1] ?? "");
+if (isMain) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

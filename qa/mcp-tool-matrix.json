@@ -1,15 +1,40 @@
 {
-  "generatedAt": "2026-07-18T13:56:40.007Z",
+  "generatedAt": "2026-08-15T07:18:28.415Z",
   "version": "1.1.1",
   "score": 1,
   "pass": true,
-  "passed": 13,
-  "total": 13,
+  "passed": 18,
+  "total": 18,
   "checks": [
     {
-      "name": "tool_count_10",
+      "name": "tool_count_13",
       "pass": true,
-      "detail": "curriculum_stats,curriculum_list_subjects,curriculum_search,curriculum_get,lesson_pack,lesson_pack_validate,curriculum_quality,assessment_scaffold,parent_notice_draft,unit_map"
+      "detail": "curriculum_stats,curriculum_list_subjects,curriculum_list_courses,curriculum_search,curriculum_get,search,fetch,lesson_pack,lesson_pack_validate,curriculum_quality,assessment_scaffold,parent_notice_draft,unit_map"
+    },
+    {
+      "name": "chatgpt_search_tool",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "chatgpt_search",
+      "pass": true,
+      "detail": "6수01-06"
+    },
+    {
+      "name": "chatgpt_fetch",
+      "pass": true,
+      "detail": "6수01-06"
+    },
+    {
+      "name": "list_courses_math",
+      "pass": true,
+      "detail": "18 courses"
+    },
+    {
+      "name": "elective_search",
+      "pass": true,
+      "detail": "12확통02-01"
     },
     {
       "name": "stats_total",
@@ -75,8 +100,11 @@
   "tools": [
     "curriculum_stats",
     "curriculum_list_subjects",
+    "curriculum_list_courses",
     "curriculum_search",
     "curriculum_get",
+    "search",
+    "fetch",
     "lesson_pack",
     "lesson_pack_validate",
     "curriculum_quality",
