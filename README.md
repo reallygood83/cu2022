@@ -16,7 +16,7 @@
 | **한글 표기** | **성취기준 커넥터** |
 | **의미** | 2022 개정 성취기준을 cite-only로 에이전트에 연결 |
 | **CLI** | `cu2022-mcp` (MCP) · **`cu2022-doc`** (터미널 → HWPX) |
-| **GitHub 리포** | `cu2022-mcp` (구 `2022CU-kr0-mcp` URL은 자동 리다이렉트) |
+| **GitHub 리포** | [`reallygood83/cu2022`](https://github.com/reallygood83/cu2022) (구 `2022CU-kr0-mcp` 는 리다이렉트) |
 
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
 📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
@@ -54,13 +54,13 @@ node -v   # v18 이상이면 OK. 없으면 https://nodejs.org 에서 LTS 설치
   "mcpServers": {
     "cu2022-mcp": {
       "command": "npx",
-      "args": ["-y", "github:reallygood83/cu2022-mcp"]
+      "args": ["-y", "github:reallygood83/cu2022"]
     }
   }
 }
 ```
 
-> 리포 개명 전이라면 `github:reallygood83/2022CU-kr0-mcp` 를 넣으면 됩니다. GitHub가 리다이렉트하면 새 이름만 쓰시면 됩니다.
+> GitHub 리포 이름은 **`cu2022`** 입니다. MCP 설정 키·패키지 이름은 **`cu2022-mcp`** 입니다. 옛 주소 `2022CU-kr0-mcp` 도 리다이렉트됩니다.
 
 ### Cursor
 
@@ -85,7 +85,7 @@ node -v   # v18 이상이면 OK. 없으면 https://nodejs.org 에서 LTS 설치
 프로젝트 폴더에서 한 줄이면 됩니다.
 
 ```bash
-claude mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022-mcp
+claude mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022
 ```
 
 또는 프로젝트 `.mcp.json`에 같은 JSON을 넣습니다. 예제: [`examples/claude_code_mcp.json`](examples/claude_code_mcp.json)
@@ -110,7 +110,7 @@ curriculum_search로 "5학년 분수" 성취기준을 찾아 줘.
 |------|------|
 | `node` 명령을 찾을 수 없음 | [Node.js LTS](https://nodejs.org) 설치 후 터미널·앱을 재시작 |
 | MCP가 회색/오류 | 앱 완전 재시작. 첫 `npx`는 다운로드라 **1~2분** 걸릴 수 있음 |
-| `github:…/cu2022-mcp` 실패 | args를 `["-y", "github:reallygood83/2022CU-kr0-mcp"]` 로 바꿔 보세요 |
+| `npx` / GitHub 404 | args를 `["-y", "github:reallygood83/cu2022"]` 로 확인하세요 (옛 이름 `2022CU-kr0-mcp` 도 동작) |
 | 도구가 안 보임 | 설정 JSON 문법(쉼표·중괄호) 확인 후 다시 저장 |
 
 개발용으로 소스를 받아 돌리려면 [아래 로컬 클론](#로컬-클론-개발용)을 보세요.
@@ -234,8 +234,8 @@ assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 소스 수정·QA가 필요할 때만 클론합니다. 일반 사용은 [위 npx 설치](#설치-복붙-한-번이면-됩니다)면 충분합니다.
 
 ```bash
-git clone https://github.com/reallygood83/cu2022-mcp.git
-cd cu2022-mcp
+git clone https://github.com/reallygood83/cu2022.git
+cd cu2022
 npm install
 npm run build
 ```
@@ -245,7 +245,7 @@ npm run build
   "mcpServers": {
     "cu2022-mcp": {
       "command": "node",
-      "args": ["/absolute/path/to/cu2022-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/cu2022/dist/index.js"]
     }
   }
 }
@@ -253,7 +253,7 @@ npm run build
 
 ```bash
 # Claude Code (로컬 빌드)
-claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022-mcp/dist/index.js
+claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022/dist/index.js
 ```
 
 ## 개발 · QA
@@ -280,7 +280,7 @@ npm run build
 |-----------|------|
 | **`cu2022-mcp`** | **공식 명칭** — 패키지·CLI·MCP 설정 키 |
 | **성취기준 커넥터** | 한글 제품 표기 (소개·매뉴얼·발표) |
-| `cu2022-mcp` | GitHub 리포지토리 이름 (구 `2022CU-kr0-mcp` 링크는 자동 리다이렉트) |
+| `cu2022` | GitHub 리포지토리 이름 (패키지·MCP 키는 `cu2022-mcp`. 구 `2022CU-kr0-mcp` 는 리다이렉트) |
 
 ---
 
@@ -298,6 +298,6 @@ npm run build
 
 ## 링크
 
-- Repository: https://github.com/reallygood83/cu2022-mcp  
+- Repository: https://github.com/reallygood83/cu2022  
 - Manual: [docs/MANUAL.md](docs/MANUAL.md)  
 - MCP 사양: https://modelcontextprotocol.io  

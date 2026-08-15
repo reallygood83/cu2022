@@ -27,8 +27,8 @@ query
 ## 설치
 
 ```bash
-git clone https://github.com/reallygood83/cu2022-mcp.git
-cd cu2022-mcp
+git clone https://github.com/reallygood83/cu2022.git
+cd cu2022
 npm install
 npm install kordoc          # HWPX 생성용 (optional peer)
 npm run build
