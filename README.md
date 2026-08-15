@@ -21,6 +21,8 @@
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
 📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
 
+**설치:** Node.js 18+ → 아래 JSON을 Cursor / Claude에 붙여 넣고 재시작. [자세히](#설치-복붙-한-번이면-됩니다)
+
 ---
 
 ## 한 줄 요약
@@ -37,11 +39,15 @@
 
 ---
 
-## 빠른 설치
+## 설치 (복붙 한 번이면 됩니다)
 
-**요구:** Node.js 18+
+**클론·빌드 없이** `npx`로 바로 붙입니다. Node.js 18+만 있으면 됩니다.
 
-### A. npx (권장)
+```bash
+node -v   # v18 이상이면 OK. 없으면 https://nodejs.org 에서 LTS 설치
+```
+
+아래 JSON을 쓰는 앱에 붙여 넣고, **앱을 한 번 재시작**하세요.
 
 ```json
 {
@@ -54,42 +60,60 @@
 }
 ```
 
-### B. 로컬 클론
+> 리포 개명 전이라면 `github:reallygood83/2022CU-kr0-mcp` 를 넣으면 됩니다. GitHub가 리다이렉트하면 새 이름만 쓰시면 됩니다.
+
+### Cursor
+
+1. **Settings → MCP → New MCP Server** (또는 `~/.cursor/mcp.json` 을 직접 엽니다)
+2. 위 JSON을 그대로 붙여 넣습니다. 이미 `mcpServers`가 있으면 `cu2022-mcp` 블록만 추가합니다.
+3. Cursor를 재시작한 뒤 MCP 목록에서 `cu2022-mcp`가 초록(연결됨)인지 확인합니다.
+
+예제: [`examples/cursor_mcp.json`](examples/cursor_mcp.json)
+
+### Claude Desktop
+
+1. 설정 파일을 엽니다.
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+2. 위 JSON을 붙여 넣습니다 (`mcpServers`에 합치기).
+3. Claude Desktop을 **완전히 종료했다가** 다시 켭니다.
+
+예제: [`examples/claude_desktop_config.json`](examples/claude_desktop_config.json)
+
+### Claude Code
+
+프로젝트 폴더에서 한 줄이면 됩니다.
 
 ```bash
-git clone https://github.com/reallygood83/cu2022-mcp.git
-cd cu2022-mcp
-npm install
-npm run build
+claude mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022-mcp
 ```
 
-```json
-{
-  "mcpServers": {
-    "cu2022-mcp": {
-      "command": "node",
-      "args": ["/absolute/path/to/cu2022-mcp/dist/index.js"]
-    }
-  }
-}
+또는 프로젝트 `.mcp.json`에 같은 JSON을 넣습니다. 예제: [`examples/claude_code_mcp.json`](examples/claude_code_mcp.json)
+
+### 설치됐는지 확인
+
+에이전트에게 이렇게 물어보세요.
+
+```text
+cu2022-mcp의 curriculum_stats를 호출해서 성취기준 건수를 보여 줘.
 ```
 
-### 클라이언트별 설정
+초·중·고 건수가 나오면 성공입니다. 이어서:
 
-| 클라이언트 | 설정 위치 / 방법 |
-|------------|------------------|
-| Claude Desktop | `claude_desktop_config.json` → `mcpServers` |
-| Claude Code | `.mcp.json` 또는 `claude mcp add cu2022-mcp -- …` |
-| Cursor | Settings → MCP |
-| Codex / Gemini / 기타 | stdio MCP `command` + `args` 지원 시 동일 |
-
-예 (Claude Code, 로컬):
-
-```bash
-claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022-mcp/dist/index.js
+```text
+curriculum_search로 "5학년 분수" 성취기준을 찾아 줘.
 ```
 
-예제 JSON: [`examples/`](examples/)
+### 안 될 때
+
+| 증상 | 해결 |
+|------|------|
+| `node` 명령을 찾을 수 없음 | [Node.js LTS](https://nodejs.org) 설치 후 터미널·앱을 재시작 |
+| MCP가 회색/오류 | 앱 완전 재시작. 첫 `npx`는 다운로드라 **1~2분** 걸릴 수 있음 |
+| `github:…/cu2022-mcp` 실패 | args를 `["-y", "github:reallygood83/2022CU-kr0-mcp"]` 로 바꿔 보세요 |
+| 도구가 안 보임 | 설정 JSON 문법(쉼표·중괄호) 확인 후 다시 저장 |
+
+개발용으로 소스를 받아 돌리려면 [아래 로컬 클론](#로컬-클론-개발용)을 보세요.
 
 ---
 
@@ -204,6 +228,33 @@ assessment_scaffold로 형성평가 3문항 골격을 만들어 줘.
 일반 사용자는 **번들된 `data/standards.json`**만으로 동작합니다. 재빌드가 필요 없습니다.
 
 ---
+
+## 로컬 클론 (개발용)
+
+소스 수정·QA가 필요할 때만 클론합니다. 일반 사용은 [위 npx 설치](#설치-복붙-한-번이면-됩니다)면 충분합니다.
+
+```bash
+git clone https://github.com/reallygood83/cu2022-mcp.git
+cd cu2022-mcp
+npm install
+npm run build
+```
+
+```json
+{
+  "mcpServers": {
+    "cu2022-mcp": {
+      "command": "node",
+      "args": ["/absolute/path/to/cu2022-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+```bash
+# Claude Code (로컬 빌드)
+claude mcp add cu2022-mcp -- node /absolute/path/to/cu2022-mcp/dist/index.js
+```
 
 ## 개발 · QA
 
