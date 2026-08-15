@@ -1,0 +1,6 @@
+# ~/.codex/config.toml 에 추가 (ChatGPT 데스크톱 · Codex CLI · IDE 공통)
+# 문서: https://developers.openai.com/codex/mcp/
+
+[mcp_servers.cu2022-mcp]
+command = "npx"
+args = ["-y", "github:reallygood83/cu2022"]

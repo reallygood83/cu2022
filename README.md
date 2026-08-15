@@ -5,10 +5,10 @@
 > AI가 성취기준 **코드를 지어내지 못하게** 하고,  
 > **인덱스에 있는 코드·문장만** 검색·인용·수업 골격에 쓰게 합니다.
 
-[![MCP](https://img.shields.io/badge/MCP-stdio-blue)](https://modelcontextprotocol.io)
+[![MCP](https://img.shields.io/badge/MCP-stdio%20%2B%20HTTP-blue)](https://modelcontextprotocol.io)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.3.0-informational)](package.json)
+[![Version](https://img.shields.io/badge/version-1.4.0-informational)](package.json)
 
 | | |
 |--|--|
@@ -21,7 +21,7 @@
 📖 **활용 매뉴얼:** [docs/MANUAL.md](docs/MANUAL.md)  
 📄 **터미널 문서 워크플로:** [docs/WORKFLOW-TERMINAL-DOC.md](docs/WORKFLOW-TERMINAL-DOC.md)
 
-**설치:** Node.js 18+ → 아래 JSON을 Cursor / Claude에 붙여 넣고 재시작. [자세히](#설치-복붙-한-번이면-됩니다)
+**설치:** Node.js 18+ → Cursor / Claude / Codex는 JSON·한 줄 명령. **ChatGPT 앱**은 HTTP `/mcp` 커넥터. [자세히](#설치-복붙-한-번이면-됩니다)
 
 ---
 
@@ -90,6 +90,50 @@ claude mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022
 
 또는 프로젝트 `.mcp.json`에 같은 JSON을 넣습니다. 예제: [`examples/claude_code_mcp.json`](examples/claude_code_mcp.json)
 
+### ChatGPT 앱 (검색 가능)
+
+ChatGPT 웹·모바일 앱은 **로컬 npx가 아니라 공개 HTTPS MCP**에 붙습니다. 이 서버는 ChatGPT 커넥터용 `search` / `fetch` 도구를 제공합니다.
+
+1. 서버를 HTTP로 띄웁니다.
+
+```bash
+git clone https://github.com/reallygood83/cu2022.git
+cd cu2022
+npm install
+npm run build
+# 공개 URL을 인용 링크로 쓰려면 설정
+export CU2022_PUBLIC_URL=https://your-host.example
+npm run start:http    # 기본 http://0.0.0.0:8787
+```
+
+2. HTTPS로 노출합니다 (하나만 고르면 됩니다).
+   - 로컬 시험: `npx --yes cloudflared tunnel --url http://localhost:8787`
+   - 상시: Railway / Fly / Render 등에 배포. 예제 [`Dockerfile`](Dockerfile)
+3. ChatGPT에서 **Settings → Apps → Create**(또는 **Connectors → Developer mode**) → 커넥터 추가.
+4. MCP URL에 `https://YOUR-HOST/mcp` 를 넣습니다. 인증은 없음(공개 교육과정 데이터).
+5. 도구 스캔이 끝나면 새 대화에서 `@cu2022-mcp` 또는 앱 목록에서 **성취기준**을 고르고  
+   `5학년 분수 성취기준 찾아줘` 처럼 검색합니다.
+
+ChatGPT **데스크톱 앱 + Codex**는 로컬 stdio로도 됩니다.
+
+```bash
+codex mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022
+```
+
+또는 `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.cu2022-mcp]
+command = "npx"
+args = ["-y", "github:reallygood83/cu2022"]
+```
+
+예제: [`examples/codex_config.toml`](examples/codex_config.toml) · 상세 [`docs/CHATGPT.md`](docs/CHATGPT.md)
+
+### Codex CLI / IDE
+
+위 `codex mcp add` 한 줄과 동일합니다. TUI에서 `/mcp`로 연결을 확인하세요.
+
 ### 설치됐는지 확인
 
 에이전트에게 이렇게 물어보세요.
@@ -117,10 +161,11 @@ curriculum_search로 "5학년 분수" 성취기준을 찾아 줘.
 
 ---
 
-## 도구 (11)
+## 도구 (13)
 
 | Tool | 용도 |
 |------|------|
+| `search` / `fetch` | **ChatGPT 앱·커넥터용** 검색/본문 (id·title·url) |
 | `curriculum_search` | 자연어·키워드·코드 검색 (**핵심**) — 고교 선택과목명(미적분Ⅰ, 확률과 통계 등) 인식, `course` 필터 지원 |
 | `curriculum_get` | 코드 단건 조회 |
 | `curriculum_list_subjects` | 학교급별 과목·건수 |

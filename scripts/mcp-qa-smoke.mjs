@@ -41,7 +41,18 @@ const pass = (name, cond, detail = "") => {
 
 const tools = await client.listTools();
 const names = tools.tools.map((t) => t.name);
-pass("tool_count_11", names.length === 11, names.join(","));
+pass("tool_count_13", names.length === 13, names.join(","));
+pass("chatgpt_search_tool", names.includes("search") && names.includes("fetch"));
+
+const gptSearch = await call("search", { query: "5학년 분수" });
+pass(
+  "chatgpt_search",
+  (gptSearch.data.results ?? []).some((r) => r.id && r.title && r.url),
+  gptSearch.data.results?.[0]?.id ?? "no hit",
+);
+const gptId = gptSearch.data.results?.[0]?.id || "6수01-06";
+const gptFetch = await call("fetch", { id: gptId });
+pass("chatgpt_fetch", gptFetch.data.id === gptId && !!gptFetch.data.text, gptFetch.data.id);
 
 // 고교 선택과목 매칭 (v1.3): 과목명 검색·course 필드·목록 도구
 const courses = await call("curriculum_list_courses", { subject: "수학" });

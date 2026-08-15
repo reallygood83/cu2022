@@ -243,7 +243,8 @@ lesson_pack_validate
 |------------|-----|
 | Claude Desktop / Code | 프롬프트에 “반드시 cu2022-mcp 도구 먼저”를 시스템·프로젝트 규칙에 고정 |
 | Cursor | 리포 규칙에 cite-only 워크플로 명시 |
-| Codex CLI | MCP 서버 키 `cu2022-mcp`로 등록 후 동일 도구명 사용 |
+| Codex CLI / ChatGPT 데스크톱 | `codex mcp add cu2022-mcp -- npx -y github:reallygood83/cu2022` |
+| ChatGPT 웹·앱 | HTTP `/mcp` 커넥터 + `search`/`fetch`. [docs/CHATGPT.md](CHATGPT.md) |
 | 자체 앱 | stdio 대신 동일 함수를 HTTP로 감싸도 스키마 유지 |
 
 ---
